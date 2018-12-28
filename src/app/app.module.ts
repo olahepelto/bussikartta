@@ -3,19 +3,11 @@ import { NgModule } from '@angular/core';
 import { LeafletModule } from '@asymmetrik/ngx-leaflet';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { Observable } from 'rxjs';
-import{ 
-  IMqttMessage,
-  MqttModule,
-  IMqttServiceOptions
-} from 'ngx-mqtt';
-
-export const MQTT_SERVICE_OPTIONS: IMqttServiceOptions = {
-  hostname: 'mqtt.hsl.fi',
-  port: 443,
-  protocol: 'wss',
-  path: ''
-};
+import { BussesService } from './busses.service';
+import { TrainsService } from './trains.service';
+import { Module2Module } from './module2/module2.module';
+import {Module3Module} from './module3/module3.module';
+import {MqttModule} from 'ngx-mqtt';
 
 @NgModule({
   declarations: [
@@ -25,7 +17,9 @@ export const MQTT_SERVICE_OPTIONS: IMqttServiceOptions = {
     BrowserModule,
     AppRoutingModule,
     LeafletModule.forRoot(),
-    MqttModule.forRoot(MQTT_SERVICE_OPTIONS),
+    Module2Module,
+    Module3Module,
+    MqttModule,
   ],
   providers: [],
   bootstrap: [AppComponent]

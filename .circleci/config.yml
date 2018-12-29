@@ -52,3 +52,11 @@ jobs:
                 key: v1-dist-{{ .Environment.CIRCLE_BRANCH }}-{{ .Environment.CIRCLE_SHA1 }}
                 paths:
                     - dist
+            - deploy:
+              name: Deploying
+              command: |
+                if [ "${CIRCLE_BRANCH}" = "master" ]; then
+                  ls
+                else
+                  echo "Not master branch, dry run only"
+                fi

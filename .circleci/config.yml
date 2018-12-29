@@ -56,6 +56,7 @@ jobs:
                 name: Deploying
                 command: |
                     if [ "${CIRCLE_BRANCH}" = "master" ]; then
+                        ls
                         sudo apt-get install sshpass && sshpass -p $ssh_pass rsync -avce ssh dist root@tetrium.fi:/var/www/test
                     else
                         echo "Not master branch, dry run only"

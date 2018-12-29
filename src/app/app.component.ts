@@ -10,8 +10,8 @@ export interface BusLocationMessage {
     veh: any,
     lat: any,
     long: any,
-  }
-};
+  };
+}
 
 @Component({
   selector: 'app-root',
@@ -36,27 +36,27 @@ export class AppComponent {
 
   constructor(private _mqttService: MqttService) {
     this.subscription = this._mqttService.observe('/hfp/v1/journey/#').subscribe((message: IMqttMessage) => {
-      this.message = <BusLocationMessage>JSON.parse(message.payload.toString())
-      const vehicleId = parseInt(this.message.VP.oper + "" + this.message.VP.veh);
+      this.message = <BusLocationMessage>JSON.parse(message.payload.toString());
+      const vehicleId = parseInt(this.message.VP.oper + '' + this.message.VP.veh, 10);
 
-      if(this.message.VP == undefined || this.message.VP == null || 
-        this.message.VP.lat == null || this.message.VP.lat == undefined){
+      if (this.message.VP === undefined || this.message.VP == null ||
+        this.message.VP.lat == null || this.message.VP.lat === undefined) {
         return;
         }
 
-      //Update vehicle to vehicles list
-      //Give the marker object to the new vehicle in the list
-      let old_vehicle_data = this.vehicles[vehicleId];
-      if(old_vehicle_data != undefined){
-        let marker_obj = old_vehicle_data.marker;
+      // Update vehicle to vehicles list
+      // Give the marker object to the new vehicle in the list
+      const old_vehicle_data = this.vehicles[vehicleId];
+      if (old_vehicle_data !== undefined) {
+        const marker_obj = old_vehicle_data.marker;
         this.vehicles[vehicleId] = this.message.VP;
         this.vehicles[vehicleId].marker = marker_obj;
 
-        const bad = Math.abs(this.vehicles[vehicleId].dl)/1.5
-        const green = 255-bad*1.5
-        const red = bad
+        const bad = Math.abs(this.vehicles[vehicleId].dl) / 1.5;
+        const green = 255 - bad * 1.5;
+        const red = bad;
 
-        const myCustomColour = 'rgba('+red+', '+green+', 0, 1)'
+        const myCustomColour = 'rgba(' + red + ', ' + green + ', 0, 1)';
         const markerHtmlStyles = `
           background-color: ${myCustomColour};
           width: 2rem;
@@ -65,17 +65,18 @@ export class AppComponent {
           position: relative;
           border-radius: 3rem 3rem 0;
           transform: rotate(${this.vehicles[vehicleId].hdg + 225}deg);
-          border: 1px solid #FFFFFF`
+          border: 1px solid #FFFFFF`;
 
         this.vehicles[vehicleId].marker.setLatLng([this.message.VP.lat, this.message.VP.long]);
-        this.vehicles[vehicleId].marker.bindPopup('I am: ' + this.toHHMMSS(-this.vehicles[vehicleId].dl) + ' late')
+        this.vehicles[vehicleId].marker.bindPopup('I am: ' + this.toHHMMSS(-this.vehicles[vehicleId].dl) + ' late');
         this.vehicles[vehicleId].marker.setIcon(divIcon({
-          className: "my-custom-pin",
+          className: 'my-custom-pin',
           iconAnchor: [0, 24],
           popupAnchor: [0, -36],
-          html: `<span style="${markerHtmlStyles}"><center style='transform: rotate(${-this.vehicles[vehicleId].hdg - 225}deg)'>${this.vehicles[vehicleId].desi}</center></span>`
+          html: `<span style="${markerHtmlStyles}"><center ´ +
+          ´style='transform: rotate(${-this.vehicles[vehicleId].hdg - 225}deg)'>${this.vehicles[vehicleId].desi}</center></span>`
         }));
-      }else{
+      } else {
         this.vehicles[vehicleId] = this.message.VP;
         this.addMarker(this.message.VP.lat, this.message.VP.long, vehicleId);
       }
@@ -94,29 +95,29 @@ export class AppComponent {
     });
   }
   public toHHMMSS(sec_num: number) {
-    var minutes = Math.floor(sec_num / 60);
-    var seconds = sec_num - (minutes * 60);
-    let m_ = minutes + 'm'
-    let s_ = seconds + 's'
-    if (minutes < 10) {m_ = '0'+m_;}
-    if (seconds < 10) {s_ = '0'+s_;}
-    return m_+' '+s_+' ';
+    const minutes = Math.floor(sec_num / 60);
+    const seconds = sec_num - (minutes * 60);
+    let m_ = minutes + 'm';
+    let s_ = seconds + 's';
+    if (minutes < 10) {m_ = '0' + m_; }
+    if (seconds < 10) {s_ = '0' + s_; }
+    return m_ + ' ' + s_ + ' ';
 }
   public unsafePublish(topic: string, message: string): void {
     this._mqttService.unsafePublish(topic, message, {qos: 1, retain: true});
   }
-  
-  public ngOnDestroy() {
+
+  public OnDestroy() {
     this.subscription.unsubscribe();
   }
 
-	addMarker(lat: any, long: any, vehicleId: number) {
+  addMarker(lat: any, long: any, vehicleId: number) {
 
-    const bad = Math.abs(this.vehicles[vehicleId].dl)/1.5
-    const green = 255-bad
-    const red = bad
+    const bad = Math.abs(this.vehicles[vehicleId].dl) / 1.5;
+    const green = 255 - bad;
+    const red = bad;
 
-    const myCustomColour = 'rgba('+red+', '+green+', 0, 1)'
+    const myCustomColour = 'rgba(' + red + ', ' + green + ', 0, 1)';
     const markerHtmlStyles = `
       background-color: ${myCustomColour};
       width: 1.5rem;
@@ -127,11 +128,11 @@ export class AppComponent {
       position: relative;
       border-radius: 3rem 3rem 0;
       transform: rotate(45deg);
-      border: 1px solid #FFFFFF`
+      border: 1px solid #FFFFFF`;
 
-		let newMarker = marker([ lat, long ],
-			{icon: divIcon({
-        className: "my-custom-pin",
+    const newMarker = marker([ lat, long ],
+      {icon: divIcon({
+        className: 'my-custom-pin',
         iconAnchor: [0, 24],
         popupAnchor: [0, -36],
         html: `<span style="${markerHtmlStyles}" />`
@@ -139,5 +140,5 @@ export class AppComponent {
     );
     this.vehicles[vehicleId].marker = newMarker;
     this.markers.push(newMarker);
-	}
+  }
 }

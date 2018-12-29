@@ -4,7 +4,7 @@ import { LeafletModule } from '@asymmetrik/ngx-leaflet';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { Observable } from 'rxjs';
-import{ 
+import {
   IMqttMessage,
   MqttModule,
   IMqttServiceOptions

@@ -23,7 +23,7 @@ export class TrainsService {
   public train_message: TrainLocationMessage;
   private train_subscription: Subscription;
 
-  public endpoint = 'http://rata.digitraffic.fi/api/v1/';
+  public endpoint = 'https://rata.digitraffic.fi/api/v1/';
   public httpOptions = {
     headers: new HttpHeaders({
       'Content-Type': 'application/json'

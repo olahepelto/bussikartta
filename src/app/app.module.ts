@@ -3,12 +3,11 @@ import { NgModule } from '@angular/core';
 import { LeafletModule } from '@asymmetrik/ngx-leaflet';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { Observable } from 'rxjs';
-import {
-  IMqttMessage,
-  MqttModule,
-  IMqttServiceOptions
-} from 'ngx-mqtt';
+import { BussesService } from './busses.service';
+import { TrainsService } from './trains.service';
+import {MqttModule} from 'ngx-mqtt';
+import { MqttService, IMqttMessage, IMqttServiceOptions } from 'ngx-mqtt';
+import { HttpClientModule } from '@angular/common/http';
 
 export const MQTT_SERVICE_OPTIONS: IMqttServiceOptions = {
   hostname: 'mqtt.hsl.fi',
@@ -26,8 +25,9 @@ export const MQTT_SERVICE_OPTIONS: IMqttServiceOptions = {
     AppRoutingModule,
     LeafletModule.forRoot(),
     MqttModule.forRoot(MQTT_SERVICE_OPTIONS),
+    HttpClientModule
   ],
-  providers: [],
+  providers: [BussesService, TrainsService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

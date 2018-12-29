@@ -41,11 +41,11 @@ jobs:
                 name: Building
                 command: |
                     if [ "${CIRCLE_BRANCH}" == "staging" ]; then
-                        ng build --prod
+                        npm rebuild node-sass && ng build --prod
                     elif [ "${CIRCLE_BRANCH}" == "master" ]; then
-                        ng build --prod
+                        npm rebuild node-sass && ng build --prod
                     else
-                        ng build
+                        npm rebuild node-sass && ng build
                     fi
             # Cache the dist folder for the deploy job
             - save_cache:

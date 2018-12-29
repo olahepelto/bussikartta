@@ -21,7 +21,7 @@ jobs:
             # Install project dependencies
             - run:
                 name: Install local dependencies
-                command: npm install && npm install -g @angular/cli
+                command: npm install && npm install @angular/cli
             # Cache local dependencies if they don't exist
             - save_cache:
                 key: v1-dependencies-{{ checksum "package.json" }}

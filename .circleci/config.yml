@@ -21,7 +21,7 @@ jobs:
             # Install project dependencies
             - run:
                 name: Install local dependencies
-                command: npm install
+                command: npm install && npm install -g @angular/cli
             # Cache local dependencies if they don't exist
             - save_cache:
                 key: v1-dependencies-{{ checksum "package.json" }}
@@ -30,11 +30,11 @@ jobs:
             # Lint the source code
             - run:
                 name: Linting
-                command: npm run lint
+                command: ng lint
             # Test the source code
             - run:
                 name: Testing
-                command: npm run test
+                command: ng test
             # Build project with different configuration based on
             # the current branch
             - run:

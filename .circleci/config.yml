@@ -52,7 +52,7 @@ jobs:
                 key: v1-dist-{{ .Environment.CIRCLE_BRANCH }}-{{ .Environment.CIRCLE_SHA1 }}
                 paths:
                     - dist
-            - deploy:
+            - run:
               name: Deploying
               command: |
                 if [ "${CIRCLE_BRANCH}" = "master" ]; then

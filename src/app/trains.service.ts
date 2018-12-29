@@ -6,20 +6,20 @@ import { map } from 'rxjs/operators';
 
 
 export interface TrainLocationMessage {
-  trainNumber: any,
-  speed: any,
+  trainNumber: any;
+  speed: any;
   location: {
     coordinates: [any, any]
     type: string
-  }
-};
+  };
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class TrainsService {
-  public mainComponent
-  public trains = []
+  public mainComponent;
+  public trains = [];
   public train_message: TrainLocationMessage;
   private train_subscription: Subscription;
 
@@ -31,7 +31,7 @@ export class TrainsService {
   };
 
   private extractData(res: Response) {
-    let body = res;
+    const body = res;
     return body || {};
   }
   getProducts(): Observable<any> {
@@ -42,46 +42,46 @@ export class TrainsService {
     this.getProducts().subscribe({
       next: event => this.processTrainRequest(event),
       error: error => console.log(error),
-      complete: () => console.log("Completed http request"),
+      complete: () => console.log('Completed http request'),
     });
     const secondsCounter = interval(5000);
     secondsCounter.subscribe(n => {
       this.getProducts().subscribe({
         next: event => this.processTrainRequest(event),
         error: error => console.log(error),
-        complete: () => console.log("Completed http request"),
+        complete: () => console.log('Completed http request'),
       });
     });
-      
+
   }
   processTrainRequest(trains: any) {
-    console.log("Updating Trains")
+    console.log('Updating Trains');
     trains.forEach(train => {
-      if (train == undefined) return;
+      if (train === undefined) { return; }
 
-      this.train_message = train
+      this.train_message = train;
 
-      const vehicleId = parseInt(this.train_message.trainNumber);
+      const vehicleId = parseInt(this.train_message.trainNumber, 10);
 
       const lat = this.train_message.location.coordinates[1];
       const lon = this.train_message.location.coordinates[0];
 
-      //Trying to rule out all the non visible at least once updated trains
+      // Trying to rule out all the non visible at least once updated trains
       try {
         if (!this.mainComponent.map.getBounds().contains([lat, lon])) {
-          if (this.trains[vehicleId] != undefined) {
-            return
+          if (this.trains[vehicleId] !== undefined) {
+            return;
           }
         }
       } catch (error) {
         return;
       }
 
-      //Update vehicle to trains list
-      //Give the marker object to the new vehicle in the list
-      let old_vehicle_data = this.trains[vehicleId];
-      if (old_vehicle_data != undefined) {
-        let marker_obj = old_vehicle_data.marker;
+      // Update vehicle to trains list
+      // Give the marker object to the new vehicle in the list
+      const old_vehicle_data = this.trains[vehicleId];
+      if (old_vehicle_data !== undefined) {
+        const marker_obj = old_vehicle_data.marker;
         this.trains[vehicleId] = this.train_message;
         this.trains[vehicleId].marker = marker_obj;
 
@@ -106,16 +106,16 @@ export class TrainsService {
           position: relative;
           border-radius: 3rem 3rem 15rem 15rem;
           transform: translateX(-1rem);
-          border: 1px solid #000000`
+          border: 1px solid #000000`;
 
         this.trains[vehicleId].marker.setLatLng([lat, lon]);
         this.trains[vehicleId].marker.bindPopup('I am: ' + ((this.trains[vehicleId].dl <= 0) ?
           (this.toMMSS(Math.abs(this.trains[vehicleId].dl)) + ' Late') :
           (this.toMMSS(Math.abs(this.trains[vehicleId].dl)) + ' Early')
-        ))
+        ));
 
         this.trains[vehicleId].marker.setIcon(divIcon({
-          className: "my-custom-pin",
+          className: 'my-custom-pin',
           iconAnchor: [0, 24],
           popupAnchor: [0, -36],
           html: `<span style="${markerHtmlStyles}"><center>${this.trains[vehicleId].trainNumber}</center></span>`
@@ -137,7 +137,7 @@ export class TrainsService {
       }
       console.log(all_trains_total_lateness/medium_value_vehicle_amount)*/
     });
-    console.log("Succesfully updated Trains!")
+    console.log('Succesfully updated Trains!');
   }
   addTrainMarker(lat: any, long: any, vehicleId: number) {
 
@@ -162,12 +162,12 @@ export class TrainsService {
     position: relative;
     border-radius: 3rem 3rem 15rem 15rem;
     transform: translateX(-1rem);
-    border: 1px solid #000000`
+    border: 1px solid #000000`;
 
-    let newMarker = marker([lat, long],
+    const newMarker = marker([lat, long],
       {
         icon: divIcon({
-          className: "my-custom-pin",
+          className: 'my-custom-pin',
           iconAnchor: [0, 24],
           popupAnchor: [0, -36],
           html: `<span style="${markerHtmlStyles}"><center>${this.trains[vehicleId].trainNumber}</center></span>`
@@ -177,14 +177,14 @@ export class TrainsService {
     this.trains[vehicleId].marker = newMarker;
     this.mainComponent.markers.push(newMarker);
   }
-  public ngOnDestroy() {
+  public OnDestroy() {
     this.train_subscription.unsubscribe();
   }
   public toMMSS(sec_num: number) {
-    var minutes = Math.floor(sec_num / 60);
-    var seconds = sec_num - (minutes * 60);
-    let m_ = minutes + 'm'
-    let s_ = seconds + 's'
+    const minutes = Math.floor(sec_num / 60);
+    const seconds = sec_num - (minutes * 60);
+    let m_ = minutes + 'm';
+    let s_ = seconds + 's';
     if (minutes < 10) { m_ = '0' + m_; }
     if (seconds < 10) { s_ = '0' + s_; }
     return m_ + ' ' + s_ + ' ';

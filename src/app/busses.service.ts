@@ -76,8 +76,8 @@ export class BussesService {
           className: 'my-custom-pin',
           iconAnchor: [0, 24],
           popupAnchor: [0, -36],
-          html: `<span style="${markerHtmlStyles}"><center´+
-          ´style='transform: rotate(${-this.busses[vehicleId].hdg - 225}deg)'>${this.busses[vehicleId].desi}</center></span>`,
+          html: `<span style="${markerHtmlStyles}">
+          <center style='transform: rotate(${-this.busses[vehicleId].hdg - 225}deg)'>${this.busses[vehicleId].desi}</center></span>`,
         }));
       } else {
         this.busses[vehicleId] = this.bus_message.VP;
@@ -126,8 +126,8 @@ export class BussesService {
         className: 'my-custom-pin',
         iconAnchor: [0, 24],
         popupAnchor: [0, -36],
-        html: `<span style="${markerHtmlStyles}"><center style='transform: rotate(${-this.busses[vehicleId].hdg - 225}deg)'>´+
-        ´${this.busses[vehicleId].desi}</center></span>`,
+        html: `<span style="${markerHtmlStyles}"><center style='transform: rotate(${-this.busses[vehicleId].hdg - 225}deg)'>
+        ${this.busses[vehicleId].desi}</center></span>`,
       })}
     );
     this.busses[vehicleId].marker = newMarker;

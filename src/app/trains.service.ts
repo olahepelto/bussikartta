@@ -1,7 +1,9 @@
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { MqttService, IMqttMessage, IMqttServiceOptions } from 'ngx-mqtt';
-import { Subscription } from 'rxjs';
 import { divIcon, marker } from 'leaflet';
+import { Observable, Subscription, interval } from 'rxjs';
+import { map } from 'rxjs/operators';
+
 
 export interface TrainLocationMessage {
   trainNumber: any,
@@ -12,26 +14,52 @@ export interface TrainLocationMessage {
   }
 };
 
-export const MQTT_SERVICE_OPTIONS: IMqttServiceOptions = {
-  hostname: 'rata-mqtt.digitraffic.fi',
-  port: 9001,
-  protocol: 'ws',
-  path: ''
-};
-
 @Injectable({
   providedIn: 'root'
 })
 export class TrainsService {
-  public map
+  public mainComponent
   public trains = []
   public train_message: TrainLocationMessage;
   private train_subscription: Subscription;
 
-  constructor(private _mqttService: MqttService) {
-    //_mqttService.connect(MQTT_SERVICE_OPTIONS)
-    this.train_subscription = this._mqttService.observe('train-locations/#').subscribe((message: IMqttMessage) => { // /hfp/v1/journey/#
-      this.train_message = <TrainLocationMessage>JSON.parse(message.payload.toString())
+  public endpoint = 'http://rata.digitraffic.fi/api/v1/';
+  public httpOptions = {
+    headers: new HttpHeaders({
+      'Content-Type': 'application/json'
+    })
+  };
+
+  private extractData(res: Response) {
+    let body = res;
+    return body || {};
+  }
+  getProducts(): Observable<any> {
+    return this.http.get(this.endpoint + 'train-locations/latest/').pipe(map(this.extractData));
+  }
+
+  constructor(private http: HttpClient) {
+    this.getProducts().subscribe({
+      next: event => this.processTrainRequest(event),
+      error: error => console.log(error),
+      complete: () => console.log("Completed http request"),
+    });
+    const secondsCounter = interval(5000);
+    secondsCounter.subscribe(n => {
+      this.getProducts().subscribe({
+        next: event => this.processTrainRequest(event),
+        error: error => console.log(error),
+        complete: () => console.log("Completed http request"),
+      });
+    });
+      
+  }
+  processTrainRequest(trains: any) {
+    console.log("Updating Trains")
+    trains.forEach(train => {
+      if (train == undefined) return;
+
+      this.train_message = train
 
       const vehicleId = parseInt(this.train_message.trainNumber);
 
@@ -40,9 +68,8 @@ export class TrainsService {
 
       //Trying to rule out all the non visible at least once updated trains
       try {
-        if(!this.map.getBounds().contains([lat, lon])){
-          console.log(this.trains[vehicleId])
-          if(this.trains[vehicleId] != undefined){
+        if (!this.mainComponent.map.getBounds().contains([lat, lon])) {
+          if (this.trains[vehicleId] != undefined) {
             return
           }
         }
@@ -53,7 +80,7 @@ export class TrainsService {
       //Update vehicle to trains list
       //Give the marker object to the new vehicle in the list
       let old_vehicle_data = this.trains[vehicleId];
-      if(old_vehicle_data != undefined){
+      if (old_vehicle_data != undefined) {
         let marker_obj = old_vehicle_data.marker;
         this.trains[vehicleId] = this.train_message;
         this.trains[vehicleId].marker = marker_obj;
@@ -82,8 +109,8 @@ export class TrainsService {
           border: 1px solid #000000`
 
         this.trains[vehicleId].marker.setLatLng([lat, lon]);
-        this.trains[vehicleId].marker.bindPopup('I am: ' + ((this.trains[vehicleId].dl <= 0) ? 
-          (this.toMMSS(Math.abs(this.trains[vehicleId].dl)) + ' Late'): 
+        this.trains[vehicleId].marker.bindPopup('I am: ' + ((this.trains[vehicleId].dl <= 0) ?
+          (this.toMMSS(Math.abs(this.trains[vehicleId].dl)) + ' Late') :
           (this.toMMSS(Math.abs(this.trains[vehicleId].dl)) + ' Early')
         ))
 
@@ -93,7 +120,7 @@ export class TrainsService {
           popupAnchor: [0, -36],
           html: `<span style="${markerHtmlStyles}"><center>${this.trains[vehicleId].trainNumber}</center></span>`
         }));
-      }else{
+      } else {
         this.trains[vehicleId] = this.train_message;
         this.addTrainMarker(lat, lon, vehicleId);
       }
@@ -110,6 +137,7 @@ export class TrainsService {
       }
       console.log(all_trains_total_lateness/medium_value_vehicle_amount)*/
     });
+    console.log("Succesfully updated Trains!")
   }
   addTrainMarker(lat: any, long: any, vehicleId: number) {
 
@@ -136,16 +164,18 @@ export class TrainsService {
     transform: translateX(-1rem);
     border: 1px solid #000000`
 
-		let newMarker = marker([ lat, long ],
-			{icon: divIcon({
-        className: "my-custom-pin",
-        iconAnchor: [0, 24],
-        popupAnchor: [0, -36],
-        html: `<span style="${markerHtmlStyles}"><center>${this.trains[vehicleId].trainNumber}</center></span>`
-      })}
+    let newMarker = marker([lat, long],
+      {
+        icon: divIcon({
+          className: "my-custom-pin",
+          iconAnchor: [0, 24],
+          popupAnchor: [0, -36],
+          html: `<span style="${markerHtmlStyles}"><center>${this.trains[vehicleId].trainNumber}</center></span>`
+        })
+      }
     );
     this.trains[vehicleId].marker = newMarker;
-    this.map.markers.push(newMarker);
+    this.mainComponent.markers.push(newMarker);
   }
   public ngOnDestroy() {
     this.train_subscription.unsubscribe();
@@ -155,11 +185,8 @@ export class TrainsService {
     var seconds = sec_num - (minutes * 60);
     let m_ = minutes + 'm'
     let s_ = seconds + 's'
-    if (minutes < 10) {m_ = '0'+m_;}
-    if (seconds < 10) {s_ = '0'+s_;}
-    return m_+' '+s_+' ';
-  }
-  public unsafePublish(topic: string, message: string): void {
-    this._mqttService.unsafePublish(topic, message, {qos: 1, retain: true});
+    if (minutes < 10) { m_ = '0' + m_; }
+    if (seconds < 10) { s_ = '0' + s_; }
+    return m_ + ' ' + s_ + ' ';
   }
 }

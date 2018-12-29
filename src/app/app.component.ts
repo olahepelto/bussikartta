@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { tileLayer, latLng, Layer, CRS} from 'leaflet';
+import { tileLayer, latLng, Layer, CRS, marker, circle} from 'leaflet';
 import { TrainsService } from './trains.service';
 import { BussesService } from './busses.service';
 
@@ -12,8 +12,8 @@ import { BussesService } from './busses.service';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
-
   title = 'bussikartta';
+  map;
   markers: Layer[] = [];
   options = {
     crs: CRS.EPSG3857,
@@ -26,11 +26,22 @@ export class AppComponent {
   };
 
 
-  constructor(private trainService: TrainsService, private bussService: BussesService) {
+  constructor(public trainService: TrainsService, public bussService: BussesService) {
 
   }
   public onMapReady(map: any){
-    this.bussService.map = map
-    this.trainService.map = map
+    map.on('locationfound', this.onLocationFound);
+
+    this.bussService.mainComponent = this
+    this.trainService.mainComponent = this
+    this.map = map
+    map.locate({setView: true, zoom: 11});
+  }
+  public onLocationFound(e: any) {
+    var radius = e.accuracy / 2;
+    console.log(e)
+    marker(e.latlng).addTo(e.target).bindPopup("You are within " + radius + " meters from this point");
+    e.target.setZoom(16)
+    e.target.flyTo(e.latlng)
   }
 }

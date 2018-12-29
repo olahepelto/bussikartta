@@ -5,9 +5,16 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { BussesService } from './busses.service';
 import { TrainsService } from './trains.service';
-import { Module2Module } from './module2/module2.module';
-import {Module3Module} from './module3/module3.module';
 import {MqttModule} from 'ngx-mqtt';
+import { MqttService, IMqttMessage, IMqttServiceOptions } from 'ngx-mqtt';
+import { HttpClientModule } from '@angular/common/http';
+
+export const MQTT_SERVICE_OPTIONS: IMqttServiceOptions = {
+  hostname: 'mqtt.hsl.fi',
+  port: 443,
+  protocol: 'wss',
+  path: ''
+};
 
 @NgModule({
   declarations: [
@@ -17,11 +24,10 @@ import {MqttModule} from 'ngx-mqtt';
     BrowserModule,
     AppRoutingModule,
     LeafletModule.forRoot(),
-    Module2Module,
-    Module3Module,
-    MqttModule,
+    MqttModule.forRoot(MQTT_SERVICE_OPTIONS),
+    HttpClientModule
   ],
-  providers: [],
+  providers: [BussesService, TrainsService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

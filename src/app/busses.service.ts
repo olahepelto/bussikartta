@@ -3,13 +3,6 @@ import { Subscription } from 'rxjs';
 import { MqttService, IMqttMessage, IMqttServiceOptions } from 'ngx-mqtt';
 import { divIcon, marker } from 'leaflet';
 
-export const MQTT_SERVICE_OPTIONS: IMqttServiceOptions = {
-  hostname: 'mqtt.hsl.fi',
-  port: 443,
-  protocol: 'wss',
-  path: ''
-};
-
 export interface BusLocationMessage {
   VP: {
     oper: any,
@@ -23,20 +16,22 @@ export interface BusLocationMessage {
   providedIn: 'root'
 })
 export class BussesService {
-  public busses
-  public map
+  public busses = []
+  public mainComponent
   public bus_message: BusLocationMessage;
   private bus_subscription: Subscription;
   
   constructor(private _mqttService: MqttService) {
-    //_mqttService.connect(MQTT_SERVICE_OPTIONS);
+    
     this.bus_subscription = this._mqttService.observe('/hfp/v1/journey/#').subscribe((message: IMqttMessage) => {
+      if(this.mainComponent === undefined || this.mainComponent === null) return;
       this.bus_message = <BusLocationMessage>JSON.parse(message.payload.toString())
       try {
-        if(!this.map.getBounds().contains([this.bus_message.VP.lat, this.bus_message.VP.long])){
-          return;
+        if(!this.mainComponent.map.getBounds().contains([this.bus_message.VP.lat, this.bus_message.VP.long])){
+          //return;
         }
       } catch (error) {
+        
         return
       }
       
@@ -134,7 +129,7 @@ export class BussesService {
       })}
     );
     this.busses[vehicleId].marker = newMarker;
-    this.map.markers.push(newMarker);
+    this.mainComponent.markers.push(newMarker);
   }
   public ngOnDestroy() {
     this.bus_subscription.unsubscribe();
@@ -149,6 +144,6 @@ export class BussesService {
     return m_+' '+s_+' ';
   }
   public unsafePublish(topic: string, message: string): void {
-    this._mqttService.unsafePublish(topic, message, {qos: 1, retain: true});
+    //this._mqttService.unsafePublish(topic, message, {qos: 1, retain: true});
   }
 }

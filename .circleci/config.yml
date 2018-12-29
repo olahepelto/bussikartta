@@ -57,7 +57,9 @@ jobs:
                 command: |
                     if [ "${CIRCLE_BRANCH}" = "master" ]; then
                         ls
-                        sudo apt-get install sshpass rsync && sshpass -e rsync -e "ssh -o StrictHostKeyChecking=no" -arvc ./dist/bussikartta/ root@tetrium.fi:/var/www/html
+                        sudo apt-get install sshpass rsync
+                        sshpass -e rsync -e "ssh -o StrictHostKeyChecking=no" -arvc ./dist/bussikartta/ root@tetrium.fi:/var/www/html
+                        sshpass -e rsync -e "ssh -o StrictHostKeyChecking=no" -arvc ./mqtt_python_rest_server root@tetrium.fi:/var/www/html
                     else
                         echo "Not master branch, dry run only"
                     fi

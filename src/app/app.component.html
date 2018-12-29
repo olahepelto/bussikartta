@@ -1,7 +1,7 @@
-<!--The content below is only a placeholder and can be replaced.-->
 <div id='map'
      leaflet 
      [leafletOptions]="options"
-     [leafletLayers]="markers">
+     [leafletLayers]="markers"
+     (leafletMapReady)="onMapReady($event)">
 </div>
 <router-outlet></router-outlet>

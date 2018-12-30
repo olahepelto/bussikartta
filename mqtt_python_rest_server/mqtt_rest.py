@@ -53,7 +53,7 @@ class Main():
 
     def get_train_desi_by_id(self, train_id):
         contents = urllib.request.urlopen("https://rata.digitraffic.fi/api/v1/trains/latest/" + str(train_id)).read()
-        train_data = json.loads(str(contents)[2:][:-1])[0]
+        train_data = json.loads(str(contents)[2:][:-1].replace("\\", ""))[0]
 
         train_cat = train_data["trainCategory"]
         train_type = train_data["trainType"]

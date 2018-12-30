@@ -59,7 +59,9 @@ jobs:
                         ls
                         sudo apt-get install sshpass rsync
                         sshpass -e rsync -e "ssh -o StrictHostKeyChecking=no" -arvc ./dist/bussikartta/ root@tetrium.fi:/var/www/html
+                        sshpass -e ssh root@tetrium.fi 'systemctl stop mqtt-tetrium-rest.service'
                         sshpass -e rsync -e "ssh -o StrictHostKeyChecking=no" -arvc ./mqtt_python_rest_server root@tetrium.fi:/var/www/html
+                        sshpass -e ssh root@tetrium.fi 'systemctl start mqtt-tetrium-rest.service'
                     else
                         echo "Not master branch, dry run only"
                     fi

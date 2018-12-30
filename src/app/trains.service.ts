@@ -128,14 +128,14 @@ Lisäveturi, vaihtotyö veturina (VLI)
       } catch (error) {
         return;
       }
-      
+
       const vehicleId = parseInt(train.trainNumber, 10);
       const designation = train.designation;
 
       if (designation === 'Commuter' || designation === '') {
         return;
       }
-      console.log("TEST")
+      console.log('TEST');
 
 
       // Update vehicle to trains list

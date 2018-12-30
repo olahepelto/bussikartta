@@ -26,7 +26,7 @@ export class BussesService {
   public translate = 1;
   public count = 0;
 
-  public endpoint = 'https://tetrium.fi:5757/';
+  public endpoint = 'https://localhost:5757/';
   public httpOptions = {
     headers: new HttpHeaders({
       'Content-Type': 'application/json'
@@ -249,6 +249,9 @@ export class BussesService {
         ${this.busses[vehicleId].desi}</center></span>`,
       })}
     );
+    newMarker.bindPopup('I am: ' + ((this.busses[vehicleId].dl <= 0) ?
+          (this.toMMSS(Math.abs(this.busses[vehicleId].dl)) + ' Late') :
+          (this.toMMSS(Math.abs(this.busses[vehicleId].dl)) + ' Early')));
     this.busses[vehicleId].marker = newMarker;
     this.mainComponent.markers.push(newMarker);
   }

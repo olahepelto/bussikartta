@@ -26,7 +26,7 @@ export class BussesService {
   public translate = 1;
   public count = 0;
 
-  public endpoint = 'https://localhost:5757/';
+  public endpoint = 'https://tetrium.fi:5757/';
   public httpOptions = {
     headers: new HttpHeaders({
       'Content-Type': 'application/json'

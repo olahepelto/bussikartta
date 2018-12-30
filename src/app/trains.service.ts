@@ -120,8 +120,10 @@ Lisäveturi, vaihtotyö veturina (VLI)
 
       // Trying to rule out all the non visible at least once updated trains
       try {
-        if (train !== undefined) {
-          return;
+        if (!this.mainComponent.map.getBounds().contains([lat, lon])) {
+          if (train === undefined) {
+            return;
+          }
         }
       } catch (error) {
         return;
@@ -133,6 +135,7 @@ Lisäveturi, vaihtotyö veturina (VLI)
       if (designation === 'Commuter' || designation === '') {
         return;
       }
+
 
       // Update vehicle to trains list
       // Give the marker object to the new vehicle in the list

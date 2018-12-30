@@ -78,7 +78,7 @@ Lisäveturi, vaihtotyö veturina (VLI)
   public train_message: TrainLocationMessage;
   private train_subscription: Subscription;
 
-  public mqtt_rest_endpoint = 'https://localhost:5757/';
+  public mqtt_rest_endpoint = 'https://tetrium.fi:5757/';
 
   public httpOptions = {
     headers: new HttpHeaders({

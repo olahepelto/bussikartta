@@ -118,24 +118,24 @@ Lisäveturi, vaihtotyö veturina (VLI)
       const lat = train.location.coordinates[1];
       const lon = train.location.coordinates[0];
 
-
       // Trying to rule out all the non visible at least once updated trains
       try {
-        if (!this.mainComponent.map.getBounds().contains([lat, lon])) {
+        /*if (!this.mainComponent.map.getBounds().contains([lat, lon])) {
           if (train !== undefined) {
             return;
           }
-        }
+        }*/
       } catch (error) {
         return;
       }
-
+      
       const vehicleId = parseInt(train.trainNumber, 10);
       const designation = train.designation;
 
       if (designation === 'Commuter' || designation === '') {
         return;
       }
+      console.log("TEST")
 
 
       // Update vehicle to trains list

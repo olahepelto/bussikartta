@@ -74,7 +74,7 @@ class Main():
     def get_trains(self):
         print("Getting trains")
         contents = urllib.request.urlopen("https://rata.digitraffic.fi/api/v1/train-locations/latest/").read()
-        self.trains = json.loads(str(contents))
+        self.trains = json.loads(str(contents)[2:][:-1])
         
         for train in self.trains:
             try:

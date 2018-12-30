@@ -1,33 +1,37 @@
 import paho.mqtt.client as mqtt
 import json
 import subprocess
-import bottle
-from bottle import run, post, request, response, get, route
+import sys
+from flask import Flask
+app = Flask(__name__)
+
 import threading
+from flask_cors import CORS, cross_origin
+cors = CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
 
 busses = []
 
-# the decorator
-def enable_cors(fn):
-    def _enable_cors(*args, **kwargs):
-        # set CORS headers
-        response.headers['Access-Control-Allow-Origin'] = '*'
-        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, OPTIONS'
-        response.headers['Access-Control-Allow-Headers'] = 'Origin, Accept, Content-Type, X-Requested-With, X-CSRF-Token'
-
-        if bottle.request.method != 'OPTIONS':
-            # actual request; reply with the actual response
-            return fn(*args, **kwargs)
-
-    return _enable_cors
-
-@route('/busses',method = 'GET')
-@enable_cors
+@app.route("/busses")
+@cross_origin()
 def process():
     return str(busses).replace("'","\"").replace("None","\"\"")
 
 def start_server():
-    run(host='tetrium.fi', port=5757, debug=True)
+
+    try:
+        if(sys.argv[1] == "--dev"):
+            context = 'adhoc'
+        elif(sys.argv[1] == "--prod"):
+            context = ('/etc/letsencrypt/live/tetrium.fi/cert.pem', '/etc/letsencrypt/live/tetrium.fi/privkey.pem')
+        else:
+            print("No argument given, please define eiter --prod or --dev flags.")
+            quit()
+    except:
+        print("ERROR: No argument given, please define eiter --prod or --dev flags. Server not started!")
+        quit()
+    
+    app.run(ssl_context=context, port=5757, host="0.0.0.0")
 
 threading.Thread(target=start_server).start()
 
@@ -39,7 +43,7 @@ def on_connect(mqttc, obj, flags, rc):
 def on_message(mqttc, obj, msg):
     bus = json.loads(str(msg.payload)[2:][:-1])["VP"]
     busses[get_bus_list_index(bus)] = {"oper": bus["oper"], "veh": bus["veh"], "lat": bus["lat"], "long": bus["long"], "hdg": bus["hdg"], "dl": bus["dl"], "desi": bus["desi"]}
-    print("Len:", len(busses))
+    #print("Len:", len(busses))
 
 def get_bus_list_index(new_data):
     new_bus_id = int(str(new_data["oper"]) + str(new_data["veh"]))
@@ -48,8 +52,9 @@ def get_bus_list_index(new_data):
         for i in range(0, len(busses)):
             if(int(str(busses[i]["oper"]) + str(busses[i]["veh"])) == new_bus_id):
                 return i
-    except e:
-        print(e)
+    except:
+        print("ERROR occured!")
+        
     busses.append(new_data)
     return len(busses)-1
 

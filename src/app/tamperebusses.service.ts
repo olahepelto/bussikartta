@@ -52,7 +52,7 @@ export class TamperebussesService {
   public translate = 1;
   public count = 0;
 
-  public endpoint = 'http://data.itsfactory.fi/siriaccess/vm/';
+  public endpoint = 'https://tetrium.fi:5757/';
   public httpOptions = {
     headers: new HttpHeaders({
       'Content-Type': 'application/json'
@@ -64,7 +64,7 @@ export class TamperebussesService {
     return body || {};
   }
   getProducts(): Observable<any> {
-    return this.http.get(this.endpoint + 'json').pipe(map(this.extractData));
+    return this.http.get(this.endpoint + 'tampere').pipe(map(this.extractData));
   }
 
 

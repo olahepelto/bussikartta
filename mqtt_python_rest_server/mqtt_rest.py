@@ -29,7 +29,7 @@ class Main():
         threading.Thread(target=self.start_mqtt).start()
     def recache_busses(self):
         self.busses = []
-        
+
     def start_mqtt(self):
         mqttc = mqtt.Client(transport="websockets")
         mqttc.on_message = self.on_message
@@ -92,6 +92,11 @@ class Main():
         
         # TODO: if trains retrieved this seconds, get cached trains
         return self.trains
+    
+    def get_tampere_busses(self):
+        print("Getting trains")
+        contents = urllib.request.urlopen("http://data.itsfactory.fi/siriaccess/vm/json").read() 
+        return str(contents)[2:][:-1]
 
     def check_train_desi_update(self):
         if(self.DO_TRAIN_DESI_UPDATE):
@@ -166,5 +171,10 @@ def busses():
 @app.route("/trains")
 def trains():
     return json.dumps(main.get_trains())
+
+@cross_origin()
+@app.route("/tampere")
+def tampere_busses():
+    return main.get_tampere_busses().replace("\\","").replace("None","\"\"")
 
 threading.Thread(target=start_server).start()

@@ -90,7 +90,7 @@ export class TamperebussesService {
 
     busses.forEach(bus_ => {
       const bus = bus_['MonitoredVehicleJourney'] as BusLocationMessage;
-
+      bus['dl'] = this.getDlFromTprFormat(bus.Delay);
       try {
         if (this.mainComponent === undefined || this.mainComponent === null ||
           !this.mainComponent.map.getBounds().contains([bus.VehicleLocation.Latitude, bus.VehicleLocation.Longitude])) {
@@ -110,12 +110,12 @@ export class TamperebussesService {
         this.busses[vehicleId] = bus;
         this.busses[vehicleId].marker = marker_obj;
 
-        const bad = Math.abs(0) / 1.5; // this.busses[vehicleId].dl
+        const bad = Math.abs(this.busses[vehicleId].dl) / 1.5;
         const green = 255 - bad * 1.5;
         const other_color = bad;
 
         let myCustomColour;
-        if (0 < 0) { // this.busses[vehicleId].dl
+        if (this.busses[vehicleId].dl < 0) {
           myCustomColour = 'rgba(' + other_color + ', ' + green + ', 0, 1)';
         } else {
           myCustomColour = 'rgba(0, ' + green + ', ' + other_color + ', 1)';
@@ -153,14 +153,28 @@ export class TamperebussesService {
     });
     console.log('Succesfully updated Busses!');
   }
+  getDlFromTprFormat(delay: string) {
+    let delaySec = 0;
+    try {
+      const delayStr = delay.replace('P0Y0M0DT0H', '').replace('.000S', '').split('M');
+      if (delayStr.includes('-')) {
+        delaySec = parseInt(delayStr[0], 10) * 60 + parseInt(delayStr[1], 10);
+      } else {
+        delaySec = -parseInt(delayStr[0], 10) * 60 - parseInt(delayStr[1], 10);
+      }
+    } catch (error) {
+      return 0;
+    }
+    return delaySec;
+  }
   addMarker(lat: any, long: any, vehicleId: number) {
 
-    const bad = Math.abs(0) / 1.5; // this.busses[vehicleId].dl
+    const bad = Math.abs(this.busses[vehicleId].dl) / 1.5;
     const green = 255 - bad;
     const red = bad;
 
     let myCustomColour;
-    if (0 < 0) { // this.busses[vehicleId].dl
+    if (this.busses[vehicleId].dl < 0) {
       myCustomColour = 'rgba(' + red + ', ' + green + ', 0, 1)';
     } else {
       myCustomColour = 'rgba(0, ' + green + ', ' + red + ', 1)';

@@ -120,7 +120,7 @@ Lisäveturi, vaihtotyö veturina (VLI)
 
       // Trying to rule out all the non visible at least once updated trains
       try {
-        if (this.mainComponent === undefined || this.mainComponent === null || 
+        if (this.mainComponent === undefined || this.mainComponent === null ||
           train === undefined || !this.mainComponent.map.getBounds().contains([lat, lon])) {
           return;
         }

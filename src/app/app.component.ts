@@ -39,8 +39,11 @@ export class AppComponent {
 
   }
   public onMapReady(map: Map) {
+    // @ts-ignore
     map.attributionControl.addAttribution('Junadata/WFS-vektoritasot Liikennevirasto, lisenssi CC 4.0 BY');
+    // @ts-ignore
     map.attributionControl.addAttribution('| Digitransit HSL bussidata, api.digitransit.fi');
+    // @ts-ignore
     map.attributionControl.addAttribution('| Tampereen bussidata, data.itsfactory.fi/');
     map.on('locationfound', this.onLocationFound);
     map.on('moveend', this.onMove);
@@ -49,14 +52,11 @@ export class AppComponent {
     this.tampereBussService.mainComponent = this;
     this.map = map;
     map.locate();
-
+    // @ts-ignore
     L.Control.Watermark = L.Control.extend({
       onAdd: function(map_: Map) {
         const sidebar = L.DomUtil.get('sidebar');
         const img = L.DomUtil.create('img');
-
-        img.src = 'https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png';
-        img.style.width = '200px';
 
         return sidebar;
       },
@@ -66,10 +66,13 @@ export class AppComponent {
       }
   });
 
+  // @ts-ignore
   L.control.watermark = function(opts) {
+    // @ts-ignore
       return new L.Control.Watermark(opts);
   };
 
+  // @ts-ignore
   L.control.watermark({ position: 'topleft' }).addTo(map);
   }
   public onLocationFound(e: any) {

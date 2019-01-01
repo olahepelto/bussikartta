@@ -5,19 +5,46 @@ import { HttpHeaders, HttpClient } from '@angular/common/http';
 import { map } from 'rxjs/operators';
 
 export interface BusLocationMessage {
-  oper: any;
-  veh: any;
-  lat: any;
-  long: any;
-  hdg: any;
-  dl: any;
-  desi: any;
+    'LineRef': {
+      'value': any
+    };
+    'DirectionRef': {
+      'value': any
+    };
+    'FramedVehicleJourneyRef': {
+      'DataFrameRef': {
+        'value': any
+      },
+      'DatedVehicleJourneyRef': any
+    };
+    'OperatorRef': {
+      'value': any
+    };
+    'OriginName': {
+      'value': string,
+      'lang': string
+    };
+    'DestinationName': {
+      'value': string,
+      'lang': string
+    };
+    'Monitored': boolean;
+    'VehicleLocation': {
+      'Longitude': any,
+      'Latitude': any
+    };
+    'Bearing': any;
+    'Delay': any;
+    'VehicleRef': {
+      'value': string
+    };
 }
+
 
 @Injectable({
   providedIn: 'root'
 })
-export class BussesService {
+export class TamperebussesService {
   public busses = [];
   public mainComponent;
   public bus_message: BusLocationMessage;
@@ -25,7 +52,7 @@ export class BussesService {
   public translate = 1;
   public count = 0;
 
-  public endpoint = 'https://tetrium.fi:5757/';
+  public endpoint = 'http://data.itsfactory.fi/siriaccess/vm/';
   public httpOptions = {
     headers: new HttpHeaders({
       'Content-Type': 'application/json'
@@ -37,7 +64,7 @@ export class BussesService {
     return body || {};
   }
   getProducts(): Observable<any> {
-    return this.http.get(this.endpoint + 'busses').pipe(map(this.extractData));
+    return this.http.get(this.endpoint + 'json').pipe(map(this.extractData));
   }
 
 
@@ -59,18 +86,21 @@ export class BussesService {
   }
   public async processBusRequest(busses: any) {
     console.log('Updating Busses');
-    busses.forEach(bus => {
+    busses = busses['Siri']['ServiceDelivery']['VehicleMonitoringDelivery'][0]['VehicleActivity'];
+
+    busses.forEach(bus_ => {
+      const bus = bus_['MonitoredVehicleJourney'] as BusLocationMessage;
 
       try {
         if (this.mainComponent === undefined || this.mainComponent === null ||
-          !this.mainComponent.map.getBounds().contains([bus.lat, bus.long])) {
+          !this.mainComponent.map.getBounds().contains([bus.VehicleLocation.Latitude, bus.VehicleLocation.Longitude])) {
           return;
         }
       } catch (error) {
         return;
       }
-
-      const vehicleId = parseInt(bus.oper + '' + bus.veh, 10);
+      const vehicleId = parseInt(bus.VehicleRef.value.replace('TKL_', '10')
+      .replace('LL_', '20').replace('Paunu_', '30').replace('PTL_', '40'), 10);
 
       // Update vehicle to vehicles list
       // Give the marker object to the new vehicle in the list
@@ -80,12 +110,12 @@ export class BussesService {
         this.busses[vehicleId] = bus;
         this.busses[vehicleId].marker = marker_obj;
 
-        const bad = Math.abs(this.busses[vehicleId].dl) / 1.5;
+        const bad = Math.abs(0) / 1.5; // this.busses[vehicleId].dl
         const green = 255 - bad * 1.5;
         const other_color = bad;
 
         let myCustomColour;
-        if (this.busses[vehicleId].dl < 0) {
+        if (0 < 0) { // this.busses[vehicleId].dl
           myCustomColour = 'rgba(' + other_color + ', ' + green + ', 0, 1)';
         } else {
           myCustomColour = 'rgba(0, ' + green + ', ' + other_color + ', 1)';
@@ -99,10 +129,10 @@ export class BussesService {
           position: relative;
           border-radius: 3rem 3rem 0;
           transform-origin: center;
-          transform: translateX(-1rem) translateY(0.5rem) rotate(${this.busses[vehicleId].hdg + 225}deg);
+          transform: translateX(-1rem) translateY(0.5rem) rotate(${this.busses[vehicleId].Bearing + 225}deg);
           border: 1px solid #FFFFFF`;
 
-        this.busses[vehicleId].marker.setLatLng([bus.lat, bus.long]);
+        this.busses[vehicleId].marker.setLatLng([bus.VehicleLocation.Latitude, bus.VehicleLocation.Longitude]);
         this.busses[vehicleId].marker.bindPopup('I am: ' + ((this.busses[vehicleId].dl <= 0) ?
           (this.toMMSS(Math.abs(this.busses[vehicleId].dl)) + ' Late') :
           (this.toMMSS(Math.abs(this.busses[vehicleId].dl)) + ' Early')
@@ -113,24 +143,24 @@ export class BussesService {
           iconAnchor: [0, 24],
           popupAnchor: [0, -36],
           html: `<span style="${markerHtmlStyles}">
-          <center style='transform: rotate(${-this.busses[vehicleId].hdg - 225}deg)'
-          >${this.busses[vehicleId].desi}</center></span>`,
+          <center style='transform: rotate(${-this.busses[vehicleId].Bearing - 225}deg)'
+          >${this.busses[vehicleId].LineRef.value}</center></span>`,
         }));
       } else {
         this.busses[vehicleId] = bus;
-        this.addMarker(bus.lat, bus.long, vehicleId);
+        this.addMarker(bus.VehicleLocation.Latitude, bus.VehicleLocation.Longitude, vehicleId);
       }
     });
     console.log('Succesfully updated Busses!');
   }
   addMarker(lat: any, long: any, vehicleId: number) {
 
-    const bad = Math.abs(this.busses[vehicleId].dl) / 1.5;
+    const bad = Math.abs(0) / 1.5; // this.busses[vehicleId].dl
     const green = 255 - bad;
     const red = bad;
 
     let myCustomColour;
-    if (this.busses[vehicleId].dl < 0) {
+    if (0 < 0) { // this.busses[vehicleId].dl
       myCustomColour = 'rgba(' + red + ', ' + green + ', 0, 1)';
     } else {
       myCustomColour = 'rgba(0, ' + green + ', ' + red + ', 1)';
@@ -145,7 +175,7 @@ export class BussesService {
     position: relative;
     border-radius: 3rem 3rem 0;
     transform-origin: center;
-    transform: translateX(-1rem) translateY(0.5rem) rotate(${this.busses[vehicleId].hdg + 225}deg);
+    transform: translateX(-1rem) translateY(0.5rem) rotate(${this.busses[vehicleId].Bearing + 225}deg);
     border: 1px solid #FFFFFF`;
 
     const newMarker = marker([ lat, long ],
@@ -154,8 +184,8 @@ export class BussesService {
         iconAnchor: [0, 24],
         popupAnchor: [0, -36],
         html: `<span style="${markerHtmlStyles}">
-        <center style='transform: rotate(${-this.busses[vehicleId].hdg - 225}deg)'>
-        ${this.busses[vehicleId].desi}</center></span>`,
+        <center style='transform: rotate(${-this.busses[vehicleId].Bearing - 225}deg)'>
+        ${this.busses[vehicleId].LineRef.value}</center></span>`,
       })}
     );
     newMarker.bindPopup('I am: ' + ((this.busses[vehicleId].dl <= 0) ?

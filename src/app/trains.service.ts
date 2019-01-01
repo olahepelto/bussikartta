@@ -110,7 +110,7 @@ Lisäveturi, vaihtotyö veturina (VLI)
     });
 
   }
-  processTrainRequest(trains: any) {
+  public async processTrainRequest(trains: any) {
     console.log('Updating Trains');
 
     trains.forEach(train => {
@@ -120,10 +120,9 @@ Lisäveturi, vaihtotyö veturina (VLI)
 
       // Trying to rule out all the non visible at least once updated trains
       try {
-        if (!this.mainComponent.map.getBounds().contains([lat, lon])) {
-          if (train === undefined) {
-            return;
-          }
+        if (this.mainComponent === undefined || this.mainComponent === null || 
+          train === undefined || !this.mainComponent.map.getBounds().contains([lat, lon])) {
+          return;
         }
       } catch (error) {
         return;
@@ -173,9 +172,8 @@ Lisäveturi, vaihtotyö veturina (VLI)
         this.trains[vehicleId] = train;
         this.addTrainMarker(lat, lon, vehicleId, designation);
       }
-
-      console.log('Succesfully updated Trains!');
     });
+    console.log('Succesfully updated Trains!');
   }
   getTraintypeByDesignation(designation: string) {
     for (const key of Object.keys(this.replacements)) {

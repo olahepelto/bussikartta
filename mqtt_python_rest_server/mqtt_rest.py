@@ -23,10 +23,13 @@ class Main():
 
         schedule.every(5).minutes.do(self.scheduled_train_update)
         schedule.every(1).seconds.do(self.check_train_desi_update)
+        schedule.every(5).minutes.do(self.recache_busses)
 
         threading.Thread(target=self.start_scheduler).start()
         threading.Thread(target=self.start_mqtt).start()
-    
+    def recache_busses(self):
+        self.busses = []
+        
     def start_mqtt(self):
         mqttc = mqtt.Client(transport="websockets")
         mqttc.on_message = self.on_message

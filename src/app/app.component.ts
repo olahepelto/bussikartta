@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { tileLayer, latLng, Layer, CRS, marker, circle} from 'leaflet';
 import { TrainsService } from './trains.service';
 import { BussesService } from './busses.service';
+import { TamperebussesService } from './tamperebusses.service';
 
 
 
@@ -27,7 +28,7 @@ export class AppComponent {
   };
 
 
-  constructor(public trainService: TrainsService, public bussService: BussesService) {
+  constructor(public trainService: TrainsService, public bussService: BussesService, public tampereBussesService: TamperebussesService) {
 
   }
   public onMapReady(map: any) {
@@ -35,6 +36,7 @@ export class AppComponent {
 
     this.bussService.mainComponent = this;
     this.trainService.mainComponent = this;
+    this.tampereBussesService.mainComponent = this;
     this.map = map;
     map.locate({setView: true, zoom: 11});
   }

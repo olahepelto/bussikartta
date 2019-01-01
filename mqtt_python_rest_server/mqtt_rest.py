@@ -39,7 +39,7 @@ class Main():
         # Uncomment to enable debug messages
         mqttc.on_log = self.on_log
         mqttc.connect("mqtt.hsl.fi", 1883, 60)
-        mqttc.subscribe("/hfp/v1/journey/#", 0) # $SYS
+        mqttc.subscribe("/hfp/v1/journey/ongoing/#", 0) # $SYS
 
         mqttc.loop_forever()
 

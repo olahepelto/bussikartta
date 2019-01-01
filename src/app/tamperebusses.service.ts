@@ -48,9 +48,9 @@ export class TamperebussesService {
   public busses = [];
   public mainComponent;
   public bus_message: BusLocationMessage;
-  private bus_subscription: Subscription;
   public translate = 1;
   public count = 0;
+  public lateCount = 0;
 
   public endpoint = 'https://tetrium.fi:5757/';
   public httpOptions = {
@@ -69,28 +69,41 @@ export class TamperebussesService {
 
 
   constructor(private http: HttpClient) {
-    this.getProducts().subscribe({
-      next: event => this.processBusRequest(event),
-      error: error => console.log(error),
-      complete: () => console.log('Completed http request'),
-    });
     const secondsCounter = interval(4000);
     secondsCounter.subscribe(n => {
       this.getProducts().subscribe({
         next: event => this.processBusRequest(event),
         error: error => console.log(error),
-        complete: () => console.log('Completed http request'),
+        complete: () => this.mainComponent.devLog('Completed Tampere busses http request.'),
       });
     });
 
   }
   public async processBusRequest(busses: any) {
-    console.log('Updating Busses');
-    busses = busses['Siri']['ServiceDelivery']['VehicleMonitoringDelivery'][0]['VehicleActivity'];
+    this.mainComponent.devLog('Updating tampere busses.');
+    try {
+      busses = busses['Siri']['ServiceDelivery']['VehicleMonitoringDelivery'][0]['VehicleActivity'];
+      this.count = busses.length;
+    } catch (error) {
+      this.count = 0;
+      return;
+    }
+
+    let lateCounter = 0;
 
     busses.forEach(bus_ => {
       const bus = bus_['MonitoredVehicleJourney'] as BusLocationMessage;
-      bus['dl'] = this.getDlFromTprFormat(bus.Delay);
+      const dl_delay = this.getDlFromTprFormat(bus.Delay);
+
+      bus['dl'] = dl_delay;
+
+      const vehicleId = parseInt(bus.VehicleRef.value.replace('TKL_', '10')
+      .replace('LL_', '20').replace('Paunu_', '30').replace('PTL_', '40'), 10);
+
+      if (dl_delay < -120) {
+        lateCounter += 1;
+      }
+
       try {
         if (this.mainComponent === undefined || this.mainComponent === null ||
           !this.mainComponent.map.getBounds().contains([bus.VehicleLocation.Latitude, bus.VehicleLocation.Longitude])) {
@@ -99,8 +112,6 @@ export class TamperebussesService {
       } catch (error) {
         return;
       }
-      const vehicleId = parseInt(bus.VehicleRef.value.replace('TKL_', '10')
-      .replace('LL_', '20').replace('Paunu_', '30').replace('PTL_', '40'), 10);
 
       // Update vehicle to vehicles list
       // Give the marker object to the new vehicle in the list
@@ -117,6 +128,7 @@ export class TamperebussesService {
         let myCustomColour;
         if (this.busses[vehicleId].dl < 0) {
           myCustomColour = 'rgba(' + other_color + ', ' + green + ', 0, 1)';
+          lateCounter += 1;
         } else {
           myCustomColour = 'rgba(0, ' + green + ', ' + other_color + ', 1)';
         }
@@ -151,7 +163,8 @@ export class TamperebussesService {
         this.addMarker(bus.VehicleLocation.Latitude, bus.VehicleLocation.Longitude, vehicleId);
       }
     });
-    console.log('Succesfully updated Busses!');
+    this.lateCount = lateCounter;
+    this.mainComponent.devLog('Succesfully updated tampere busses!');
   }
   getDlFromTprFormat(delay: string) {
     let delaySec = 0;
@@ -163,6 +176,7 @@ export class TamperebussesService {
         delaySec = -parseInt(delayStr[0], 10) * 60 - parseInt(delayStr[1], 10);
       }
     } catch (error) {
+      this.mainComponent.devLog('Error converting date from tampere format!', error);
       return 0;
     }
     return delaySec;
@@ -209,7 +223,7 @@ export class TamperebussesService {
     this.mainComponent.markers.push(newMarker);
   }
   public OnDestroy() {
-    this.bus_subscription.unsubscribe();
+
   }
   public toMMSS(sec_num: number) {
     const minutes = Math.floor(sec_num / 60);

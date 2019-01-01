@@ -1,3 +1,33 @@
+<style>
+    .lorem {
+        font-style: italic;
+        text-align: justify;
+        color: #AAA;
+    }
+</style>
+<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+<!--<i class="fa fa-bars"></i>-->
+<div id='sidebar' class='leaflet-touch leaflet-bar' style="background-color:white; width: 200px; padding: 15px;">
+    <div style='text-align: center;'>
+        <h1>Liikennedataa</h1>
+    </div>
+    <div>
+        <h3>HSL</h3>
+        Kartalla: {{bussService.count}}<br>
+        Myöhässä: {{bussService.lateCount}} (+2min)<!--<br>
+        Keskim. myöhässä: {{bussService.averageLate}}-->
+    </div>
+    <div>
+        <h3>TKL</h3>
+        Kartalla: {{tampereBussService.count}}<br>
+        Myöhässä: {{tampereBussService.lateCount}} (+2min)
+    </div>
+    <div>
+        <h3>VR</h3>
+        Kartalla: {{trainService.count}}
+    </div>
+</div>
+
 <div id='map'
      leaflet 
      [leafletOptions]="options"

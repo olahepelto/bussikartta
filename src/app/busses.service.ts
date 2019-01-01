@@ -24,7 +24,7 @@ export class BussesService {
   private bus_subscription: Subscription;
   public translate = 1;
   public count = 0;
-
+  public lateCount = 0;
   public endpoint = 'https://tetrium.fi:5757/';
   public httpOptions = {
     headers: new HttpHeaders({
@@ -42,24 +42,29 @@ export class BussesService {
 
 
   constructor(private http: HttpClient) {
-    this.getProducts().subscribe({
-      next: event => this.processBusRequest(event),
-      error: error => console.log(error),
-      complete: () => console.log('Completed http request'),
-    });
     const secondsCounter = interval(4000);
     secondsCounter.subscribe(n => {
       this.getProducts().subscribe({
         next: event => this.processBusRequest(event),
         error: error => console.log(error),
-        complete: () => console.log('Completed http request'),
+        complete: () => this.mainComponent.devLog('Completed busses http request.'),
       });
     });
 
   }
   public async processBusRequest(busses: any) {
-    console.log('Updating Busses');
+    this.count = busses.length;
+    this.mainComponent.devLog('Processing buss request');
+
+    let lateCounter = 0;
+
     busses.forEach(bus => {
+
+      const vehicleId = parseInt(bus.oper + '' + bus.veh, 10);
+
+      if (bus.dl < -120) {
+        lateCounter += 1;
+      }
 
       try {
         if (this.mainComponent === undefined || this.mainComponent === null ||
@@ -70,7 +75,7 @@ export class BussesService {
         return;
       }
 
-      const vehicleId = parseInt(bus.oper + '' + bus.veh, 10);
+
 
       // Update vehicle to vehicles list
       // Give the marker object to the new vehicle in the list
@@ -121,7 +126,8 @@ export class BussesService {
         this.addMarker(bus.lat, bus.long, vehicleId);
       }
     });
-    console.log('Succesfully updated Busses!');
+    this.lateCount = lateCounter;
+    this.mainComponent.devLog('Succesfully updated busses!');
   }
   addMarker(lat: any, long: any, vehicleId: number) {
 

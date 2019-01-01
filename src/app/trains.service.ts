@@ -72,11 +72,10 @@ Lisäveturi, vaihtotyö veturina (VLI)
     'VLI': 'Lisäveturi, vaihtotyö veturina'
   };
 
-
+  public count = 0;
   public mainComponent;
   public trains = [];
   public train_message: TrainLocationMessage;
-  private train_subscription: Subscription;
 
   public mqtt_rest_endpoint = 'https://tetrium.fi:5757/';
 
@@ -95,26 +94,21 @@ Lisäveturi, vaihtotyö veturina (VLI)
   }
 
   constructor(private http: HttpClient) {
-    this.getProducts().subscribe({
-      next: event => this.processTrainRequest(event),
-      error: error => console.log(error),
-      complete: () => console.log('Completed http request'),
-    });
     const secondsCounter = interval(5000);
     secondsCounter.subscribe(n => {
       this.getProducts().subscribe({
         next: event => this.processTrainRequest(event),
         error: error => console.log(error),
-        complete: () => console.log('Completed http request'),
+        complete: () => this.mainComponent.devLog('Completed trains http request.'),
       });
     });
 
   }
   public async processTrainRequest(trains: any) {
-    console.log('Updating Trains');
+    this.count = trains.length;
+    this.mainComponent.devLog('Updating Trains');
 
     trains.forEach(train => {
-      // console.log()
       const lat = train.location.coordinates[1];
       const lon = train.location.coordinates[0];
 
@@ -173,7 +167,7 @@ Lisäveturi, vaihtotyö veturina (VLI)
         this.addTrainMarker(lat, lon, vehicleId, designation);
       }
     });
-    console.log('Succesfully updated Trains!');
+    this.mainComponent.devLog('Succesfully updated trains!');
   }
   getTraintypeByDesignation(designation: string) {
     for (const key of Object.keys(this.replacements)) {
@@ -216,7 +210,7 @@ Lisäveturi, vaihtotyö veturina (VLI)
     this.mainComponent.markers.push(newMarker);
   }
   public OnDestroy() {
-    this.train_subscription.unsubscribe();
+
   }
   public toMMSS(sec_num: number) {
     const minutes = Math.floor(sec_num / 60);

@@ -128,7 +128,7 @@ export class TamperebussesService {
         let myCustomColour;
         if (this.busses[vehicleId].dl < 0) {
           myCustomColour = 'rgba(' + other_color + ', ' + green + ', 0, 1)';
-          lateCounter += 1;
+          console.log('TODO: remove this log :D');
         } else {
           myCustomColour = 'rgba(0, ' + green + ', ' + other_color + ', 1)';
         }

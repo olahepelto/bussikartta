@@ -110,7 +110,7 @@ export class TamperebussesService {
 
       try {
         if (this.mainComponent === undefined || this.mainComponent === null ||
-          !this.mainComponent.map.getBounds().contains([bus.VehicleLocation.Latitude, bus.VehicleLocation.Longitude])) {
+          !this.mainComponent.map_.getBounds().contains([bus.VehicleLocation.Latitude, bus.VehicleLocation.Longitude])) {
           return;
         }
       } catch (error) {

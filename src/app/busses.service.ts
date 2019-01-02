@@ -72,7 +72,7 @@ export class BussesService {
 
       try {
         if (this.mainComponent === undefined || this.mainComponent === null ||
-          !this.mainComponent.map.getBounds().contains([bus.lat, bus.long])) {
+          !this.mainComponent.map_.getBounds().contains([bus.lat, bus.long])) {
           return;
         }
       } catch (error) {

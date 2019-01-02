@@ -47,7 +47,7 @@ export class AppComponent {
   public lineChartLabels_tkl: Array<any> = [];
 
   title = 'bussikartta';
-  map;
+  map_;
   markers: Layer[] = [];
   options = {
     crs: CRS.EPSG3857,
@@ -141,30 +141,30 @@ export class AppComponent {
     });
     chartLabels.push(label);
   }
-  public onMapReady(map: Map) {
+  public onMapReady(map_: Map) {
     // @ts-ignore
-    map.attributionControl.addAttribution('Junadata/WFS-vektoritasot Liikennevirasto, lisenssi CC 4.0 BY');
+    map_.attributionControl.addAttribution('Junadata/WFS-vektoritasot Liikennevirasto, lisenssi CC 4.0 BY');
     // @ts-ignore
-    map.attributionControl.addAttribution('| Digitransit HSL bussidata, api.digitransit.fi');
+    map_.attributionControl.addAttribution('| Digitransit HSL bussidata, api.digitransit.fi');
     // @ts-ignore
-    map.attributionControl.addAttribution('| Tampereen bussidata, data.itsfactory.fi/');
-    map.on('locationfound', this.onLocationFound);
-    map.on('moveend', this.onMove);
+    map_.attributionControl.addAttribution('| Tampereen bussidata, data.itsfactory.fi/');
+    map_.on('locationfound', this.onLocationFound);
+    map_.on('moveend', this.onMove);
     this.bussService.mainComponent = this;
     this.trainService.mainComponent = this;
     this.tampereBussService.mainComponent = this;
-    this.map = map;
-    map.locate();
+    this.map_ = map_;
+    map_.locate();
     // @ts-ignore
     L.Control.Watermark = L.Control.extend({
-      onAdd: function(map_: Map) {
+      onAdd: function(map__: Map) {
         const sidebar = L.DomUtil.get('sidebar');
         const img = L.DomUtil.create('img');
 
         return sidebar;
       },
 
-      onRemove: function(map_: Map) {
+      onRemove: function(map__: Map) {
           // Nothing to do here
       }
   });
@@ -175,7 +175,7 @@ export class AppComponent {
       return new L.Control.Watermark(opts);
   };
   // @ts-ignore
-  L.control.watermark({ position: 'topleft' }).addTo(map);
+  L.control.watermark({ position: 'topleft' }).addTo(map_);
   }
   public onLocationFound(e: any) {
     const radius = e.accuracy / 2;

@@ -1,7 +1,7 @@
 import { Component, Input } from '@angular/core';
 
 @Component({
-  selector: 'chart-component',
+  selector: 'app-chart-component',
   templateUrl: './chart.component.html'
 })
 export class ChartComponent {
@@ -20,7 +20,7 @@ export class ChartComponent {
       ]
     }
   };
-  
+
   public lineChartColors: Array<any> = [
     { // grey
       backgroundColor: 'rgba(148,159,177,0.2)',

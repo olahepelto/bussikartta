@@ -78,7 +78,6 @@ export class AppComponent {
       ],
         new Date().getHours() + ':' + new Date().getMinutes() + ':' + new Date().getSeconds());
     });*/
-
     this.getProducts().subscribe({
       next: event => this.processGraphRequest(event),
       error: error => console.log(error),

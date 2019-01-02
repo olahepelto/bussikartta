@@ -1,10 +1,12 @@
 import { Component } from '@angular/core';
-import { tileLayer, latLng, Layer, CRS, marker, circle, Map, Control} from 'leaflet';
+import { tileLayer, latLng, Layer, CRS, marker, circle, Map, Control, icon} from 'leaflet';
 import { TrainsService } from './trains.service';
 import { BussesService } from './busses.service';
 import { TamperebussesService } from './tamperebusses.service';
 import { isDevMode } from '@angular/core';
 import * as L from 'leaflet';
+import 'leaflet/dist/images/marker-shadow.png';
+import 'leaflet/dist/images/marker-icon.png';
 
 const layerPysakit = tileLayer.wms('https://julkinen.liikennevirasto.fi/inspirepalvelu/avoin/wms?',
 {layers: 'DR_PYSAKKI', format: 'image/png', transparent: true});
@@ -71,13 +73,19 @@ export class AppComponent {
     // @ts-ignore
       return new L.Control.Watermark(opts);
   };
-
   // @ts-ignore
   L.control.watermark({ position: 'topleft' }).addTo(map);
   }
   public onLocationFound(e: any) {
     const radius = e.accuracy / 2;
-    marker(e.latlng).addTo(e.target).bindPopup('You are within ' + radius + ' meters from this point');
+    marker(e.latlng, {
+      icon: icon({
+         iconSize: [ 25, 41 ],
+         iconAnchor: [ 13, 41 ],
+         iconUrl: 'assets/marker-icon.png',
+         shadowUrl: 'assets/marker-shadow.png'
+      })
+   }).addTo(e.target).bindPopup('You are within ' + Math.round(radius) + ' meters from this point');
     e.target.setView(e.latlng, 16);
   }
   public onMove(e: any) {

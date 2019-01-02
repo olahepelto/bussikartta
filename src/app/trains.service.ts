@@ -3,7 +3,7 @@ import {
   HttpHeaders
 } from '@angular/common/http';
 import {
-  Injectable
+  Injectable, isDevMode
 } from '@angular/core';
 import {
   divIcon,
@@ -77,7 +77,7 @@ Lisäveturi, vaihtotyö veturina (VLI)
   public trains = [];
   public train_message: TrainLocationMessage;
 
-  public mqtt_rest_endpoint = 'https://tetrium.fi:5757/';
+  public mqtt_rest_endpoint = isDevMode() ? 'https://localhost:5757/' : 'https://tetrium.fi:5757/';
 
   public httpOptions = {
     headers: new HttpHeaders({

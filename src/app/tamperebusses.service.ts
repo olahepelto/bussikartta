@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, isDevMode } from '@angular/core';
 import { Subscription, Observable, interval } from 'rxjs';
 import { divIcon, marker } from 'leaflet';
 import { HttpHeaders, HttpClient } from '@angular/common/http';
@@ -51,8 +51,9 @@ export class TamperebussesService {
   public translate = 1;
   public count = 0;
   public lateCount = 0;
+  public earlyCount = 0;
 
-  public endpoint = 'https://tetrium.fi:5757/';
+  public endpoint = isDevMode() ? 'https://localhost:5757/' : 'https://tetrium.fi:5757/';
   public httpOptions = {
     headers: new HttpHeaders({
       'Content-Type': 'application/json'
@@ -90,6 +91,7 @@ export class TamperebussesService {
     }
 
     let lateCounter = 0;
+    let earlyCounter = 0;
 
     busses.forEach(bus_ => {
       const bus = bus_['MonitoredVehicleJourney'] as BusLocationMessage;
@@ -102,6 +104,8 @@ export class TamperebussesService {
 
       if (dl_delay < -120) {
         lateCounter += 1;
+      } else if (dl_delay > 120) {
+        earlyCounter += 1;
       }
 
       try {
@@ -128,7 +132,6 @@ export class TamperebussesService {
         let myCustomColour;
         if (this.busses[vehicleId].dl < 0) {
           myCustomColour = 'rgba(' + other_color + ', ' + green + ', 0, 1)';
-          console.log('TODO: remove this log :D');
         } else {
           myCustomColour = 'rgba(0, ' + green + ', ' + other_color + ', 1)';
         }
@@ -164,6 +167,7 @@ export class TamperebussesService {
       }
     });
     this.lateCount = lateCounter;
+    this.earlyCount = earlyCounter;
     this.mainComponent.devLog('Succesfully updated tampere busses!');
   }
   getDlFromTprFormat(delay: string) {

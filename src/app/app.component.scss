@@ -2,3 +2,15 @@
     height: 100vh;
     width: 100vw;
 }
+.invisible {
+    visibility: hidden;
+    width: 10px !important;
+    height: 10px !important;
+    padding: 0px !important;
+    margin: 0px !important;
+}
+.invisibleSidebar {
+    height: 30px !important;
+    width: 30px !important;
+    margin-top: 10px !important;
+}

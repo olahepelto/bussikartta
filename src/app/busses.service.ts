@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, isDevMode } from '@angular/core';
 import { Subscription, Observable, interval } from 'rxjs';
 import { divIcon, marker } from 'leaflet';
 import { HttpHeaders, HttpClient } from '@angular/common/http';
@@ -25,7 +25,8 @@ export class BussesService {
   public translate = 1;
   public count = 0;
   public lateCount = 0;
-  public endpoint = 'https://tetrium.fi:5757/';
+  public earlyCount = 0;
+  public endpoint = isDevMode() ? 'https://localhost:5757/' : 'https://tetrium.fi:5757/';
   public httpOptions = {
     headers: new HttpHeaders({
       'Content-Type': 'application/json'
@@ -57,6 +58,7 @@ export class BussesService {
     this.mainComponent.devLog('Processing buss request');
 
     let lateCounter = 0;
+    let earlyCounter = 0;
 
     busses.forEach(bus => {
 
@@ -64,6 +66,8 @@ export class BussesService {
 
       if (bus.dl < -120) {
         lateCounter += 1;
+      } else if (bus.dl > 120) {
+        earlyCounter += 1;
       }
 
       try {
@@ -127,6 +131,7 @@ export class BussesService {
       }
     });
     this.lateCount = lateCounter;
+    this.earlyCount = earlyCounter;
     this.mainComponent.devLog('Succesfully updated busses!');
   }
   addMarker(lat: any, long: any, vehicleId: number) {

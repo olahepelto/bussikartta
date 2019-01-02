@@ -7,6 +7,10 @@ import { isDevMode } from '@angular/core';
 import * as L from 'leaflet';
 import 'leaflet/dist/images/marker-shadow.png';
 import 'leaflet/dist/images/marker-icon.png';
+import { interval } from 'rxjs/internal/observable/interval';
+import { HttpHeaders, HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs/internal/Observable';
+import { map } from 'rxjs/internal/operators/map';
 
 const layerPysakit = tileLayer.wms('https://julkinen.liikennevirasto.fi/inspirepalvelu/avoin/wms?',
 {layers: 'DR_PYSAKKI', format: 'image/png', transparent: true});
@@ -23,6 +27,25 @@ const layerLiikennepaikat = tileLayer.wms('https://julkinen.liikennevirasto.fi/i
   ]
 })
 export class AppComponent {
+  public sidebarVisible = true;
+  public endpoint = isDevMode() ? 'https://localhost:5757/' : 'https://tetrium.fi:5757/';
+  public httpOptions = {
+    headers: new HttpHeaders({
+      'Content-Type': 'application/json'
+    })
+  };
+  public lineChartData_hsl: Array<any> = [
+    {data: [], label: 'HSL kartalla', pointRadius: 0.5, pointHoverRadius: 1},
+    {data: [], label: 'HSL myöhässä', pointRadius: 0.5, pointHoverRadius: 1},
+  ];
+  public lineChartLabels_hsl: Array<any> = [];
+
+  public lineChartData_tkl: Array<any> = [
+    {data: [], label: 'TKL kartalla', pointRadius: 0.5, pointHoverRadius: 1},
+    {data: [], label: 'TKL myöhässä', pointRadius: 0.5, pointHoverRadius: 1},
+  ];
+  public lineChartLabels_tkl: Array<any> = [];
+
   title = 'bussikartta';
   map;
   markers: Layer[] = [];
@@ -36,9 +59,87 @@ export class AppComponent {
     zoom: 16,
     center: latLng(60.222314, 24.892475)
   };
+  private extractData(res: Response) {
+    const body = res;
+    return body || {};
+  }
+  getProducts(): Observable<any> {
+    return this.http.get(this.endpoint + 'graphs').pipe(map(this.extractData));
+  }
 
-  constructor(public trainService: TrainsService, public bussService: BussesService, public tampereBussService: TamperebussesService) {
+  constructor(public trainService: TrainsService, public bussService: BussesService,
+    public tampereBussService: TamperebussesService, public http: HttpClient) {
+    /*const secondsCounter = interval(60000);
+    secondsCounter.subscribe(n => {
+      if (bussService.count === 0 || tampereBussService.count === 0) {return; }
+      this.newDataPoint([
+        Math.round(bussService.count),
+        Math.round(bussService.lateCount)
+      ],
+        new Date().getHours() + ':' + new Date().getMinutes() + ':' + new Date().getSeconds());
+    });*/
 
+    this.getProducts().subscribe({
+      next: event => this.processGraphRequest(event),
+      error: error => console.log(error),
+      complete: () => console.log('Got graph history data!'),
+    });
+
+    const secondsCounter2 = interval(60000);
+    secondsCounter2.subscribe(n => {
+    this.getProducts().subscribe({
+      next: event => this.processGraphRequest(event),
+      error: error => console.log(error),
+      complete: () => console.log('Got graph history data!'),
+    });
+  });
+  }
+  public processGraphRequest(event: any) {
+    this.resetGraphs();
+
+    for (const i in event['hsl']['labels']) {
+      if (event['hsl']['labels'].hasOwnProperty(i)) {
+        this.newDataPoint(
+          [
+            event['hsl']['data']['bus_count'][i],
+            event['hsl']['data']['bus_late'][i]
+          ],
+          event['hsl']['labels'][i],
+          this.lineChartData_hsl,
+          this.lineChartLabels_hsl
+        );
+      }
+    }
+    for (const i in event['tampere']['labels']) {
+      if (event['tampere']['labels'].hasOwnProperty(i)) {
+        this.newDataPoint(
+          [
+            event['tampere']['data']['bus_count'][i],
+            event['tampere']['data']['bus_late'][i]
+          ],
+          event['tampere']['labels'][i],
+          this.lineChartData_tkl,
+          this.lineChartLabels_tkl
+        );
+      }
+    }
+  }
+  public resetGraphs() {
+    this.lineChartData_hsl[0]['data'] = [];
+    this.lineChartData_hsl[1]['data'] = [];
+    this.lineChartLabels_hsl = [];
+
+    this.lineChartData_tkl[0]['data'] = [];
+    this.lineChartData_tkl[1]['data'] = [];
+    this.lineChartLabels_tkl = [];
+  }
+  public newDataPoint(dataArr = [100], label, chartData, chartLabels) {
+    chartData.forEach((dataset, index) => {
+      chartData[index] = Object.assign({}, chartData[index], {
+        data: [...chartData[index].data, dataArr[index]]
+      });
+    });
+    chartLabels.push(label);
   }
   public onMapReady(map: Map) {
     // @ts-ignore

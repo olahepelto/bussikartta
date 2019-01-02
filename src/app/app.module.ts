@@ -7,16 +7,20 @@ import { BussesService } from './busses.service';
 import { TamperebussesService } from './tamperebusses.service';
 import { TrainsService } from './trains.service';
 import { HttpClientModule } from '@angular/common/http';
+import { ChartsModule } from 'ng2-charts';
+import { ChartComponent } from './chart/chart.component';
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    ChartComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     LeafletModule.forRoot(),
-    HttpClientModule
+    HttpClientModule,
+    ChartsModule
   ],
   providers: [BussesService, TrainsService, TamperebussesService],
   bootstrap: [AppComponent]

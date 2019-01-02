@@ -9,26 +9,50 @@ import schedule
 import time
 import threading
 from flask_cors import CORS, cross_origin
+from time import gmtime, strftime
 
 class Main():
+    hsl_bus_graph = {
+        "labels": [],
+        "data": {
+            "bus_count": [],
+            "bus_late": [],
+            "bus_early": []
+        }
+    }
+    tkl_bus_graph = {
+        "labels": [],
+        "data": {
+            "bus_count": [],
+            "bus_late": [],
+            "bus_early": []
+        }
+    }
 
     busses = []
     trains = []
     designations = [None] * 100000
     DO_TRAIN_DESI_UPDATE = False
+    GRAPH_DATA_LIMIT = 200
 
     def __init__(self):
         print("Initing!")
         self.scheduled_train_update()
+        self.check_train_desi_update()
 
         schedule.every(5).minutes.do(self.scheduled_train_update)
-        schedule.every(1).seconds.do(self.check_train_desi_update)
-        schedule.every(5).minutes.do(self.recache_busses)
+        schedule.every(2).minutes.do(self.check_train_desi_update)
+        schedule.every(1).minutes.do(self.recache_busses_update_graph)
 
         threading.Thread(target=self.start_scheduler).start()
         threading.Thread(target=self.start_mqtt).start()
-    def recache_busses(self):
+    def recache_busses_update_graph(self):
+        self.graph_data_update()
+
+        print("RECACHING BUSSES!")
+        print("Number of busses before recache: ", len(self.busses));
         self.busses = []
+        # schedule. Flip busses thing TODO: !!
 
     def start_mqtt(self):
         mqttc = mqtt.Client(transport="websockets")
@@ -50,22 +74,28 @@ class Main():
         current_train_num = 0
         for train in self.trains:
             current_train_num += 1
-            designation = self.get_train_desi_by_id(train["trainNumber"])
-            print("Nr", current_train_num, "Train",train["trainNumber"], "designation is:", designation)
-            self.designations[train["trainNumber"]] = designation
+            threading.Thread(target=self.get_train_desi_by_id, args=[train["trainNumber"], current_train_num, train]).start()
+            time.sleep(.150)
 
-    def get_train_desi_by_id(self, train_id):
-        contents = urllib.request.urlopen("https://rata.digitraffic.fi/api/v1/trains/latest/" + str(train_id)).read()
-        train_data = json.loads(str(contents)[2:][:-1].replace("\\", ""))[0]
+    def get_train_desi_by_id(self, train_id, current_train_num, train):
+        try:
+            contents = urllib.request.urlopen("https://rata.digitraffic.fi/api/v1/trains/latest/" + str(train_id)).read()
+            train_data = json.loads(str(contents)[2:][:-1].replace("\\", ""))[0]
+        except:
+            return "ERR";
+        
 
         train_cat = train_data["trainCategory"]
         train_type = train_data["trainType"]
         commuter_id = train_data["commuterLineID"]
 
         if(train_cat == "Commuter"):
-            return train_cat
+            designation = train_cat
         else:
-            return train_type + str(train_id)
+            designation = train_type + str(train_id)
+        
+        print("Nr", current_train_num, "Train",train["trainNumber"], "designation is:", designation)
+        self.designations[train["trainNumber"]] = designation
         
 
     def start_scheduler(self):
@@ -95,8 +125,9 @@ class Main():
     
     def get_tampere_busses(self):
         print("Getting trains")
-        contents = urllib.request.urlopen("http://data.itsfactory.fi/siriaccess/vm/json").read() 
-        return str(contents)[2:][:-1]
+        contents = urllib.request.urlopen("http://data.itsfactory.fi/siriaccess/vm/json").read()
+        self.tampere_busses = json.loads(str(contents)[2:][:-1].replace("\\","").replace("None","\"\""))
+        return str(contents)[2:][:-1].replace("\\","").replace("None","\"\"")
 
     def check_train_desi_update(self):
         if(self.DO_TRAIN_DESI_UPDATE):
@@ -104,6 +135,70 @@ class Main():
             print("Train designations are not up to date! Updating.")
             self.get_all_train_designations()
             print("Finished train designation update.")
+            
+    def get_dl_from_tpr_format(self, delay):
+        delaySec = 0;
+        try:
+            delayStr = delay.replace('P0Y0M0DT0H', '').replace('.000S', '').split('M');
+            if ("-" in delayStr):
+                delaySec = int(delayStr[0], 10) * 60 + int(delayStr[1], 10);
+            else:
+                delaySec = -int(delayStr[0], 10) * 60 - int(delayStr[1], 10);
+        except:
+            print("Error converting tampere date format!")
+            return 0;
+        return delaySec;
+
+    def graph_data_update(self):
+        print("Updating graph data");
+        self.get_tampere_busses()
+
+        hsl_bus_count = 0
+        hsl_bus_late = 0
+        hsl_bus_early = 0
+        tkl_bus_count = 0
+        tkl_bus_late = 0
+        tkl_bus_early = 0
+
+        for bus in self.busses:
+            hsl_bus_count += 1
+            try:
+                if(int(bus["dl"]) < -120):
+                    hsl_bus_late += 1
+                elif(int(bus["dl"] > 120)):
+                    hsl_bus_early += 1
+            except:
+                print("ERROR PARSING JSON WHEN UPDATING GRAPH DATA!")
+
+        for bus in self.tampere_busses['Siri']['ServiceDelivery']['VehicleMonitoringDelivery'][0]['VehicleActivity']:
+            tkl_bus_count += 1
+            if(self.get_dl_from_tpr_format(bus['MonitoredVehicleJourney']['Delay']) < -120):
+                tkl_bus_late += 1
+            elif(self.get_dl_from_tpr_format(bus['MonitoredVehicleJourney']['Delay']) > 120):
+                tkl_bus_early += 1
+
+        #HSL
+        self.hsl_bus_graph["labels"].append(strftime("%H:%M:%S", gmtime()));
+        self.hsl_bus_graph["data"]["bus_count"].append(hsl_bus_count);
+        self.hsl_bus_graph["data"]["bus_late"].append(hsl_bus_late);
+        self.hsl_bus_graph["data"]["bus_early"].append(hsl_bus_early);
+
+        self.hsl_bus_graph["labels"] = self.hsl_bus_graph["labels"][-self.GRAPH_DATA_LIMIT:];
+        self.hsl_bus_graph["data"]["bus_count"] = self.hsl_bus_graph["data"]["bus_count"][-self.GRAPH_DATA_LIMIT:];
+        self.hsl_bus_graph["data"]["bus_late"] = self.hsl_bus_graph["data"]["bus_late"][-self.GRAPH_DATA_LIMIT:];
+        self.hsl_bus_graph["data"]["bus_early"] = self.hsl_bus_graph["data"]["bus_early"][-self.GRAPH_DATA_LIMIT:];
+
+        # TKL
+        self.tkl_bus_graph["labels"].append(strftime("%H:%M:%S", gmtime()));
+        self.tkl_bus_graph["data"]["bus_count"].append(tkl_bus_count);
+        self.tkl_bus_graph["data"]["bus_late"].append(tkl_bus_late);
+        self.tkl_bus_graph["data"]["bus_early"].append(tkl_bus_early);
+
+        self.tkl_bus_graph["labels"] = self.tkl_bus_graph["labels"][-self.GRAPH_DATA_LIMIT:];
+        self.tkl_bus_graph["data"]["bus_count"] = self.tkl_bus_graph["data"]["bus_count"][-self.GRAPH_DATA_LIMIT:];
+        self.tkl_bus_graph["data"]["bus_late"] = self.tkl_bus_graph["data"]["bus_late"][-self.GRAPH_DATA_LIMIT:];
+        self.tkl_bus_graph["data"]["bus_early"] = self.tkl_bus_graph["data"]["bus_early"][-self.GRAPH_DATA_LIMIT:];
+
 
     def scheduled_train_update(self):
         print("Doing train update.")
@@ -128,7 +223,7 @@ class Main():
             print("ERROR occured!")
             
         self.busses.append(new_data)
-        return len(self.busses)-11
+        return len(self.busses) - 1#TODO IS THIS RIGHT?
 
     def on_publish(self, mqttc, obj, mid):
         print("mid: "+str(mid))
@@ -165,16 +260,23 @@ main = Main()
 @cross_origin()
 @app.route("/busses")
 def busses():
+    print("Nr of busses:", len(main.busses))
     return str(main.busses).replace("'","\"").replace("None","\"\"")
 
 @cross_origin()
 @app.route("/trains")
 def trains():
+    print("Nr of trains:", len(main.trains))
     return json.dumps(main.get_trains())
 
 @cross_origin()
 @app.route("/tampere")
 def tampere_busses():
-    return main.get_tampere_busses().replace("\\","").replace("None","\"\"")
+    return main.get_tampere_busses()
+
+@cross_origin()
+@app.route("/graphs")
+def graphs():
+    return "{\"tampere\":" + str(main.tkl_bus_graph).replace("'","\"").replace("None","\"\"") + ", \"hsl\":" + str(main.hsl_bus_graph).replace("'","\"").replace("None","\"\"") + "}";
 
 threading.Thread(target=start_server).start()

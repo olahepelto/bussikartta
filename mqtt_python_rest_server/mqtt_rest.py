@@ -33,7 +33,7 @@ class Main():
     trains = []
     designations = [None] * 100000
     DO_TRAIN_DESI_UPDATE = False
-    GRAPH_DATA_LIMIT = 200
+    GRAPH_DATA_LIMIT = 1440
 
     def __init__(self):
         print("Initing!")

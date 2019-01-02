@@ -18,25 +18,25 @@
         </div>
     </div>
     
-    <div [ngClass]="{'invisible':!sidebarVisible}" style="width: 200px; margin: 15px; overflow-y: auto; height: 80vh;">
+    <div [ngClass]="{'invisible':!sidebarVisible}" style="width: 200px; margin: 15px; overflow-y: auto; max-height: 80vh;">
         <div style='text-align: center;'>
-            <h1>Liikennedataa</h1>
+            <h1 style="margin-top: 0px;">Liikennedataa</h1>
         </div>
         <div>
-            <h3>HSL</h3>
+            <h3 style="margin-bottom: 2px;">HSL</h3>
             Kartalla: {{bussService.count}}<br>
             Myöhässä: {{bussService.lateCount}} (+2min)<!--<br>
             Keskim. myöhässä: {{bussService.averageLate}}--><br>
             Etuajassa: {{bussService.earlyCount}} (+2min)
         </div>
         <div>
-            <h3>TKL</h3>
+            <h3 style="margin-bottom: 2px;">TKL</h3>
             Kartalla: {{tampereBussService.count}}<br>
             Myöhässä: {{tampereBussService.lateCount}} (+2min)<br>
             Etuajassa: {{tampereBussService.earlyCount}} (+2min)
         </div>
         <div>
-            <h3>VR</h3>
+            <h3 style="margin-bottom: 2px;">VR</h3>
             Kartalla: {{trainService.count}}
         </div>
         <app-chart-component [lineChartData]=lineChartData_hsl [lineChartLabels]=lineChartLabels_hsl></app-chart-component>

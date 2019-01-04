@@ -106,7 +106,7 @@ class Main():
     def start_scheduler(self):
         schedule.every(5).minutes.do(self.run_threaded_train_update)
         schedule.every(2).minutes.do(self.run_threaded_desi_update)
-        schedule.every(2).seconds.do(self.run_threaded_recache_busses)
+        schedule.every(2).minutes.do(self.run_threaded_recache_busses)
         print("Starting scheduler")
         while 1:
             schedule.run_pending()

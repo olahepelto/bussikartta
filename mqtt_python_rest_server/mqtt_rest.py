@@ -9,9 +9,12 @@ import schedule
 import time
 import threading
 from flask_cors import CORS, cross_origin
-from time import gmtime, strftime
+from time import localtime, strftime
+#from pytz import timezone
+#import pytz
 
 class Main():
+    #helsinki_timezone = timezone('EET')
     hsl_bus_graph = {
         "labels": [],
         "data": {
@@ -193,7 +196,7 @@ class Main():
         
 
         #HSL
-        self.hsl_bus_graph["labels"].append(strftime("%H:%M:%S", gmtime()));
+        self.hsl_bus_graph["labels"].append(strftime("%H:%M:%S", localtime()));
         self.hsl_bus_graph["data"]["bus_count"].append(hsl_bus_count);
         self.hsl_bus_graph["data"]["bus_late"].append(hsl_bus_late);
         self.hsl_bus_graph["data"]["bus_early"].append(hsl_bus_early);
@@ -204,7 +207,7 @@ class Main():
         self.hsl_bus_graph["data"]["bus_early"] = self.hsl_bus_graph["data"]["bus_early"][-self.GRAPH_DATA_LIMIT:];
 
         # TKL
-        self.tkl_bus_graph["labels"].append(strftime("%H:%M:%S", gmtime()));
+        self.tkl_bus_graph["labels"].append(strftime("%H:%M:%S", localtime()));
         self.tkl_bus_graph["data"]["bus_count"].append(tkl_bus_count);
         self.tkl_bus_graph["data"]["bus_late"].append(tkl_bus_late);
         self.tkl_bus_graph["data"]["bus_early"].append(tkl_bus_early);

@@ -33,26 +33,33 @@ class Main():
     trains = []
     designations = [None] * 100000
     DO_TRAIN_DESI_UPDATE = False
-    GRAPH_DATA_LIMIT = 1440
+    GRAPH_DATA_LIMIT = 1440 * 2
 
     def __init__(self):
         print("Initing!")
         self.scheduled_train_update()
         self.check_train_desi_update()
 
-        schedule.every(5).minutes.do(self.scheduled_train_update)
-        schedule.every(2).minutes.do(self.check_train_desi_update)
-        schedule.every(1).minutes.do(self.recache_busses_update_graph)
-
         threading.Thread(target=self.start_scheduler).start()
         threading.Thread(target=self.start_mqtt).start()
-    def recache_busses_update_graph(self):
-        self.graph_data_update()
+    
+    def run_threaded_train_update (self):
+        threading.Thread(target=self.scheduled_train_update).start()
+    def run_threaded_desi_update (self):
+        threading.Thread(target=self.check_train_desi_update).start()
+    def run_threaded_recache_busses (self):
+        threading.Thread(target=self.recache_busses_update_graph).start()
 
+    def recache_busses_update_graph(self):
+        print("TEST")
+        try:
+            self.graph_data_update()
+        except:
+            print("FAILED DOING GRAPH DATA UPDATE ------------------ !!!")
+        
         print("RECACHING BUSSES!")
         print("Number of busses before recache: ", len(self.busses));
         self.busses = []
-        # schedule. Flip busses thing TODO: !!
 
     def start_mqtt(self):
         mqttc = mqtt.Client(transport="websockets")
@@ -93,12 +100,13 @@ class Main():
             designation = train_cat
         else:
             designation = train_type + str(train_id)
-        
-        print("Nr", current_train_num, "Train",train["trainNumber"], "designation is:", designation)
         self.designations[train["trainNumber"]] = designation
         
 
     def start_scheduler(self):
+        schedule.every(5).minutes.do(self.run_threaded_train_update)
+        schedule.every(2).minutes.do(self.run_threaded_desi_update)
+        schedule.every(2).seconds.do(self.run_threaded_recache_busses)
         print("Starting scheduler")
         while 1:
             schedule.run_pending()
@@ -170,12 +178,19 @@ class Main():
             except:
                 print("ERROR PARSING JSON WHEN UPDATING GRAPH DATA!")
 
-        for bus in self.tampere_busses['Siri']['ServiceDelivery']['VehicleMonitoringDelivery'][0]['VehicleActivity']:
-            tkl_bus_count += 1
-            if(self.get_dl_from_tpr_format(bus['MonitoredVehicleJourney']['Delay']) < -120):
-                tkl_bus_late += 1
-            elif(self.get_dl_from_tpr_format(bus['MonitoredVehicleJourney']['Delay']) > 120):
-                tkl_bus_early += 1
+        try:
+            for bus in self.tampere_busses['Siri']['ServiceDelivery']['VehicleMonitoringDelivery'][0]['VehicleActivity']:
+                try:
+                    tkl_bus_count += 1
+                    if(self.get_dl_from_tpr_format(bus['MonitoredVehicleJourney']['Delay']) < -120):
+                        tkl_bus_late += 1
+                    elif(self.get_dl_from_tpr_format(bus['MonitoredVehicleJourney']['Delay']) > 120):
+                        tkl_bus_early += 1
+                except:
+                    print("ERROR: Tried to count tampere busses but failed")      
+        except:
+            print("ERROR: Tried to get tampere busses key")
+        
 
         #HSL
         self.hsl_bus_graph["labels"].append(strftime("%H:%M:%S", gmtime()));

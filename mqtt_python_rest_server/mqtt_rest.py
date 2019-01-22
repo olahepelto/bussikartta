@@ -229,8 +229,8 @@ class Main():
         try:
             us = json.loads(str(msg.payload)[2:][:-1])["VP"]
             self.busses[self.get_bus_list_index(bus)] = {"oper": bus["oper"], "veh": bus["veh"], "lat": bus["lat"], "long": bus["long"], "hdg": bus["hdg"], "dl": bus["dl"], "desi": bus["desi"]}
-        except:
-            print("ERROR: Failed to receive message!")
+        except Exception as e:
+            print("ERROR: Failed to receive message!", str(e))
 
     def get_bus_list_index(self, new_data):
         new_bus_id = int(str(new_data["oper"]) + str(new_data["veh"]))

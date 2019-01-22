@@ -227,7 +227,7 @@ class Main():
 
     def on_message(self, mqttc, obj, msg):
         try:
-            us = json.loads(str(msg.payload)[2:][:-1])["VP"]
+            bus = json.loads(str(msg.payload)[2:][:-1])["VP"]
             self.busses[self.get_bus_list_index(bus)] = {"oper": bus["oper"], "veh": bus["veh"], "lat": bus["lat"], "long": bus["long"], "hdg": bus["hdg"], "dl": bus["dl"], "desi": bus["desi"]}
         except Exception as e:
             print("ERROR: Failed to receive message!", str(e))

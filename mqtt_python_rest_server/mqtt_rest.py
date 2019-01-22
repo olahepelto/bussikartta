@@ -10,11 +10,8 @@ import time
 import threading
 from flask_cors import CORS, cross_origin
 from time import localtime, strftime
-#from pytz import timezone
-#import pytz
 
 class Main():
-    #helsinki_timezone = timezone('EET')
     hsl_bus_graph = {
         "labels": [],
         "data": {
@@ -36,7 +33,7 @@ class Main():
     trains = []
     designations = [None] * 100000
     DO_TRAIN_DESI_UPDATE = False
-    GRAPH_DATA_LIMIT = 1440 * 2
+    GRAPH_DATA_LIMIT = 1440
 
     def __init__(self):
         print("Initing!")
@@ -54,7 +51,6 @@ class Main():
         threading.Thread(target=self.recache_busses_update_graph).start()
 
     def recache_busses_update_graph(self):
-        print("TEST")
         try:
             self.graph_data_update()
         except:
@@ -74,8 +70,12 @@ class Main():
         mqttc.on_log = self.on_log
         mqttc.connect("mqtt.hsl.fi", 1883, 60)
         mqttc.subscribe("/hfp/v1/journey/ongoing/#", 0) # $SYS
-
-        mqttc.loop_forever()
+        try:
+            mqttc.loop_forever()
+        except:
+            print("ERROR: MQTT Crashed, restarting thread!")
+            threading.Thread(target=self.start_mqtt).start()
+        
 
     def get_all_train_designations(self): # TODO: Get train designations
         print("Getting train designations")
@@ -105,7 +105,6 @@ class Main():
             designation = train_type + str(train_id)
         self.designations[train["trainNumber"]] = designation
         
-
     def start_scheduler(self):
         schedule.every(5).minutes.do(self.run_threaded_train_update)
         schedule.every(2).minutes.do(self.run_threaded_desi_update)
@@ -227,8 +226,11 @@ class Main():
         print("Connected to mqtt server: "+str(rc))
 
     def on_message(self, mqttc, obj, msg):
-        bus = json.loads(str(msg.payload)[2:][:-1])["VP"]
-        self.busses[self.get_bus_list_index(bus)] = {"oper": bus["oper"], "veh": bus["veh"], "lat": bus["lat"], "long": bus["long"], "hdg": bus["hdg"], "dl": bus["dl"], "desi": bus["desi"]}
+        try:
+            us = json.loads(str(msg.payload)[2:][:-1])["VP"]
+            self.busses[self.get_bus_list_index(bus)] = {"oper": bus["oper"], "veh": bus["veh"], "lat": bus["lat"], "long": bus["long"], "hdg": bus["hdg"], "dl": bus["dl"], "desi": bus["desi"]}
+        except:
+            print("ERROR: Failed to receive message!")
 
     def get_bus_list_index(self, new_data):
         new_bus_id = int(str(new_data["oper"]) + str(new_data["veh"]))
@@ -251,7 +253,6 @@ class Main():
 
     def on_log(self, mqttc, obj, level, string):
         pass
-        # print(string)
 
 def start_server():
     try:

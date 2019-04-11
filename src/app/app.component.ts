@@ -142,11 +142,13 @@ export class AppComponent {
   }
   public onMapReady(map_: Map) {
     // @ts-ignore
-    map_.attributionControl.addAttribution('Junadata/WFS-vektoritasot Liikennevirasto, lisenssi CC 4.0 BY');
+    map_.attributionControl.addAttribution('Kehittänyt Otto Lähepelto, github.com/olahepelto/ ');
     // @ts-ignore
-    map_.attributionControl.addAttribution('| Digitransit HSL bussidata, api.digitransit.fi');
+    map_.attributionControl.addAttribution('| Liikennevirasto CC 4.0 BY');
     // @ts-ignore
-    map_.attributionControl.addAttribution('| Tampereen bussidata, data.itsfactory.fi/');
+    map_.attributionControl.addAttribution('| api.digitransit.fi');
+    // @ts-ignore
+    map_.attributionControl.addAttribution('| data.itsfactory.fi/');
     map_.on('locationfound', this.onLocationFound);
     map_.on('moveend', this.onMove);
     this.bussService.mainComponent = this;

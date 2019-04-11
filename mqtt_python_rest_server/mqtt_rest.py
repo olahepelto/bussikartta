@@ -61,14 +61,14 @@ class Main():
         self.busses = []
 
     def start_mqtt(self):
-        mqttc = mqtt.Client(transport="websockets")
+        mqttc = mqtt.Client(transport="tcp")
         mqttc.on_message = self.on_message
         mqttc.on_connect = self.on_connect
         mqttc.on_publish = self.on_publish
         mqttc.on_subscribe = self.on_subscribe
         # Uncomment to enable debug messages
         mqttc.on_log = self.on_log
-        mqttc.connect("mqtt.hsl.fi", 8883, 60)
+        mqttc.connect("mqtt.hsl.fi", 1883, 60)
         mqttc.subscribe("/hfp/v1/journey/ongoing/#", 0) # $SYS
         try:
             mqttc.loop_forever()

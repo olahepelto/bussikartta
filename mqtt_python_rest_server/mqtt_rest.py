@@ -59,9 +59,8 @@ class Main():
         print("RECACHING BUSSES!")
         print("Number of busses before recache: ", len(self.busses));
         # If the mqtt has fucked up, restart
-        if(len(self.busses) == 0){
+        if(len(self.busses) == 0):
           quit()
-        }
         self.busses = []
 
     def start_mqtt(self):

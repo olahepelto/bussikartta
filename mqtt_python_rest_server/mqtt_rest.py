@@ -58,6 +58,10 @@ class Main():
         
         print("RECACHING BUSSES!")
         print("Number of busses before recache: ", len(self.busses));
+        # If the mqtt has fucked up, restart
+        if(len(self.busses) == 0){
+          quit()
+        }
         self.busses = []
 
     def start_mqtt(self):
@@ -252,8 +256,9 @@ class Main():
         print("Subscribed: "+str(mid)+" "+str(granted_qos))
 
     def on_log(self, mqttc, obj, level, string):
-      print("---------------- IMPORTANT LINE ----------------")
-      print(string)
+      pass
+      #print("---------------- IMPORTANT LINE ----------------")
+      #print(string)
 
 def start_server():
     try:

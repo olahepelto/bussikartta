@@ -252,7 +252,8 @@ class Main():
         print("Subscribed: "+str(mid)+" "+str(granted_qos))
 
     def on_log(self, mqttc, obj, level, string):
-        pass
+      print("---------------- IMPORTANT LINE ----------------")
+      print(string)
 
 def start_server():
     try:

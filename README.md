@@ -1,6 +1,6 @@
 # Bussikartta
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 6.2.5.
+Bussikartta is built in two parts, the angular frontend and the python backend. The python backend provides a REST api for the frontend.
 
 ## Development server
 

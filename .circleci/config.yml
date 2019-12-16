@@ -27,10 +27,6 @@ jobs:
                 key: v1-dependencies-{{ checksum "package.json" }}
                 paths:
                     - node_modules
-            # Lint the source code
-            - run:
-                name: Linting
-                command: ng lint
             # Test the source code
             - run:
                 name: Testing

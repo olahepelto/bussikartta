@@ -5,7 +5,7 @@ jobs:
     build:
         working_directory: ~/project
         docker:
-            - image: circleci/node:8.11.3-browsers
+            - image: circleci/node:chakracore-10.13.0
         steps:
             # Checkout the code from the branch into the working_directory
             - checkout
@@ -58,10 +58,10 @@ jobs:
                     if [ "${CIRCLE_BRANCH}" = "master" ]; then
                         ls
                         sudo apt-get install sshpass rsync
-                        sshpass -e rsync -e "ssh -o StrictHostKeyChecking=no" -arvc ./dist/bussikartta/ root@tetrium.fi:/var/www/html
-                        sshpass -e ssh root@tetrium.fi 'systemctl stop mqtt-tetrium-rest.service'
-                        sshpass -e rsync -e "ssh -o StrictHostKeyChecking=no" -arvc ./mqtt_python_rest_server root@tetrium.fi:/var/www/html
-                        sshpass -e ssh root@tetrium.fi 'systemctl start mqtt-tetrium-rest.service'
+                        sshpass -e rsync -e "ssh -o StrictHostKeyChecking=no" -arvc ./dist/bussikartta/ root@tetrium.fi:/var/www/bussit
+                        sshpass -e ssh root@tetrium.fi 'systemctl stop bussikartta.service'
+                        sshpass -e rsync -e "ssh -o StrictHostKeyChecking=no" -arvc ./mqtt_python_rest_server root@tetrium.fi:/var/www/bussit
+                        sshpass -e ssh root@tetrium.fi 'systemctl start bussikartta.service'
                     else
                         echo "Not master branch, dry run only"
                     fi

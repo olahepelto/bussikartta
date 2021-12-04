@@ -124,11 +124,11 @@ Lisäveturi, vaihtotyö veturina (VLI)
 
       const vehicleId = parseInt(train.trainNumber, 10);
       const designation = train.designation;
-
-      if (designation === 'Commuter' || designation === '') {
+      // TODO: API IS DIFFERENT
+      /*if (designation === 'Commuter' || designation === '') {
         return;
-      }
-
+      }*/
+      
 
       // Update vehicle to trains list
       // Give the marker object to the new vehicle in the list
@@ -153,18 +153,19 @@ Lisäveturi, vaihtotyö veturina (VLI)
             border: 1px solid #000000`;
 
         this.trains[vehicleId].marker.setLatLng([lat, lon]);
-        this.trains[vehicleId].marker.bindPopup(this.getTraintypeByDesignation(designation));
+        //TODO: Broken
+        //this.trains[vehicleId].marker.bindPopup(this.getTraintypeByDesignation(designation));
 
         this.trains[vehicleId].marker.setIcon(divIcon({
           className: 'my-custom-pin',
           iconAnchor: [0, 24],
           popupAnchor: [0, -36],
           html: `<span style="${markerHtmlStyles}"><center style='overflow-wrap: break-word;
-          word-wrap: break-word;'>${designation}</center></span>`
+          word-wrap: break-word;'>${vehicleId}</center></span>`
         }));
       } else {
         this.trains[vehicleId] = train;
-        this.addTrainMarker(lat, lon, vehicleId, designation);
+        this.addTrainMarker(lat, lon, vehicleId, vehicleId);
       }
     });
     this.mainComponent.devLog('Succesfully updated trains!');
@@ -203,7 +204,8 @@ Lisäveturi, vaihtotyö veturina (VLI)
       })
     });
 
-    newMarker.bindPopup(this.getTraintypeByDesignation(designation));
+    //TODO: BROKEN
+    //newMarker.bindPopup(this.getTraintypeByDesignation(designation));
 
 
     this.trains[vehicleId].marker = newMarker;

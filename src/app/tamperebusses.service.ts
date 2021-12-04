@@ -93,6 +93,8 @@ export class TamperebussesService {
     let lateCounter = 0;
     let earlyCounter = 0;
 
+
+    this.mainComponent.markers = this.mainComponent.markers.filter(a => a.dragging._marker._popup == undefined)
     busses.forEach(bus_ => {
       const bus = bus_['MonitoredVehicleJourney'] as BusLocationMessage;
       const dl_delay = this.getDlFromTprFormat(bus.Delay);
@@ -111,61 +113,19 @@ export class TamperebussesService {
       try {
         if (this.mainComponent === undefined || this.mainComponent === null ||
           !this.mainComponent.map_.getBounds().contains([bus.VehicleLocation.Latitude, bus.VehicleLocation.Longitude])) {
-          return;
+          //return;
         }
       } catch (error) {
-        return;
+        //return;
       }
 
       // Update vehicle to vehicles list
       // Give the marker object to the new vehicle in the list
       const old_vehicle_data = this.busses[vehicleId];
-      if (old_vehicle_data !== undefined) {
-        const marker_obj = old_vehicle_data.marker;
-        this.busses[vehicleId] = bus;
-        this.busses[vehicleId].marker = marker_obj;
-
-        const bad = Math.abs(this.busses[vehicleId].dl) / 1.5;
-        const green = 255 - bad * 1.5;
-        const other_color = bad;
-
-        let myCustomColour;
-        if (this.busses[vehicleId].dl < 0) {
-          myCustomColour = 'rgba(' + other_color + ', ' + green + ', 0, 1)';
-        } else {
-          myCustomColour = 'rgba(0, ' + green + ', ' + other_color + ', 1)';
-        }
-
-        const markerHtmlStyles = `
-          background-color: ${myCustomColour};
-          width: 2rem;
-          height: 2rem;
-          display: block;
-          position: relative;
-          border-radius: 3rem 3rem 0;
-          transform-origin: center;
-          transform: translateX(-1rem) translateY(0.5rem) rotate(${this.busses[vehicleId].Bearing + 225}deg);
-          border: 1px solid #FFFFFF`;
-
-        this.busses[vehicleId].marker.setLatLng([bus.VehicleLocation.Latitude, bus.VehicleLocation.Longitude]);
-        this.busses[vehicleId].marker.bindPopup('I am: ' + ((this.busses[vehicleId].dl <= 0) ?
-          (this.toMMSS(Math.abs(this.busses[vehicleId].dl)) + ' Late') :
-          (this.toMMSS(Math.abs(this.busses[vehicleId].dl)) + ' Early')
-        ));
-
-        this.busses[vehicleId].marker.setIcon(divIcon({
-          className: 'my-custom-pin',
-          iconAnchor: [0, 24],
-          popupAnchor: [0, -36],
-          html: `<span style="${markerHtmlStyles}">
-          <center style='transform: rotate(${-this.busses[vehicleId].Bearing - 225}deg)'
-          >${this.busses[vehicleId].LineRef.value}</center></span>`,
-        }));
-      } else {
-        this.busses[vehicleId] = bus;
-        this.addMarker(bus.VehicleLocation.Latitude, bus.VehicleLocation.Longitude, vehicleId);
-      }
+      this.busses[vehicleId] = bus;
+      this.addMarker(bus.VehicleLocation.Latitude, bus.VehicleLocation.Longitude, vehicleId);
     });
+    this.busses = []
     this.lateCount = lateCounter;
     this.earlyCount = earlyCounter;
     this.mainComponent.devLog('Succesfully updated tampere busses!');

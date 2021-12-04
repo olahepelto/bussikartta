@@ -8,6 +8,7 @@ import urllib.request
 import schedule
 import time
 import threading
+import gzip
 from flask_cors import CORS, cross_origin
 from time import localtime, strftime
 
@@ -119,7 +120,12 @@ class Main():
 
     def get_trains(self):
         print("Getting trains")
-        contents = urllib.request.urlopen("https://rata.digitraffic.fi/api/v1/train-locations/latest/").read()
+        req = urllib.request.Request("https://rata.digitraffic.fi/api/v1/train-locations/latest/",
+        headers = {'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+           'Accept-Encoding': 'gzip, deflate',
+           'Accept-Language': 'en-US,en;q=0.5',
+           'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:38.0) Gecko/20100101 Firefox/38.0'})
+        contents = gzip.decompress(urllib.request.urlopen(req).read())
         self.trains = json.loads(str(contents)[2:][:-1])
         
         for train in self.trains:
@@ -132,7 +138,6 @@ class Main():
                 train["designation"] = ""
                 self.DO_TRAIN_DESI_UPDATE = True
             
-        
         # TODO: if trains retrieved this seconds, get cached trains
         return self.trains
     
